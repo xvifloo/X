@@ -1,3 +1,77 @@
+# XviFloo Ecosystem
+
+Official technology ecosystem platform for:
+
+- **XviTypoo** (Typing Platform)
+- **XviGet** (Widget Engine)
+- **Kleava AI** (AI Assistant)
+
+## Tech stack
+
+- Next.js 15 + App Router
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- Prisma + PostgreSQL
+- Auth.js (NextAuth)
+- React Query
+- Cloudinary (planned for CMS media)
+
+## Getting started
+
+1. Create your environment file:
+
+```bash
+copy .env.example .env
+```
+
+2. Set `DATABASE_URL` to a PostgreSQL instance.
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+4. Generate Prisma client:
+
+```bash
+npm run db:generate
+```
+
+5. Run the dev server:
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Database
+
+- Prisma schema: `prisma/schema.prisma`
+- Useful commands:
+  - `npm run db:migrate`
+  - `npm run db:push`
+  - `npm run db:studio`
+
+## Auth
+
+- Auth route: `src/app/api/auth/[...nextauth]/route.ts`
+- Sign-in page: `src/app/auth/sign-in/page.tsx`
+- Configure providers via `.env` (GitHub/Google are optional).
+
+## i18n (English + Bangla)
+
+- Cookie-based locale selection (`xv_locale`)
+- Dictionaries:
+  - `src/i18n/dictionaries/en.ts`
+  - `src/i18n/dictionaries/bn.ts`
+
+## Theme (Light / Dark / System)
+
+- Implemented with `next-themes` (`class` strategy)
+- CSS variables in `src/app/globals.css` (shadcn compatible)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

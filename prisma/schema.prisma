@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RoadmapStatus {
+  PLANNED
+  IN_PROGRESS
+  SHIPPED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?    @unique
+
+  status UserStatus @default(ACTIVE)
+
+  locale          String? // "en" | "bn"
+  themePreference String? // "light" | "dark" | "system"
+
+  accounts Account[]
+  sessions Session[]
+
+  roles UserRole[]
+
+  auditLogsAuthored        AuditLog[]
+  contentItemsAuthored     ContentItem[]
+  contentRevisionsEdited   ContentRevision[]
+  mediaAssetsUploaded      MediaAsset[]
+  roadmapItemsCreated      RoadmapItem[]
+  roadmapChangelogsCreated RoadmapChangelog[]
+  analyticsEvents          AnalyticsEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Auth.js (NextAuth) Prisma Adapter models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// RBAC
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  users       UserRole[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  actionKey   String
+  targetType  String?
+  targetId    String?
+  metadata    Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([actionKey, createdAt])
+}
+
+// CMS (localized)
+model ContentType {
+  id        String        @id @default(cuid())
+  key       String        @unique
+  name      String
+  items     ContentItem[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ContentItem {
+  id        String        @id @default(cuid())
+  typeId    String
+  slug      String
+  status    ContentStatus @default(DRAFT)
+  authorId  String?
+
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  type          ContentType           @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  author        User?                 @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  revisions     ContentRevision[]
+  translations  ContentTranslation[]
+  mediaLinks    ContentMedia[]
+
+  @@unique([typeId, slug])
+  @@index([status, publishedAt])
+}
+
+model ContentRevision {
+  id        String   @id @default(cuid())
+  itemId    String
+  version   Int
+  data      Json
+  editorId  String?
+  createdAt DateTime @default(now())
+
+  item   ContentItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  editor User?       @relation(fields: [editorId], references: [id], onDelete: SetNull)
+
+  @@unique([itemId, version])
+  @@index([itemId])
+}
+
+model ContentTranslation {
+  id          String @id @default(cuid())
+  itemId      String
+  locale      String // "en" | "bn"
+  title       String
+  description String?
+  body        String?
+  seo         Json?
+
+  item ContentItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, locale])
+  @@index([locale])
+}
+
+model MediaAsset {
+  id                 String   @id @default(cuid())
+  cloudinaryPublicId String   @unique
+  url                String
+  type               String
+  width              Int?
+  height             Int?
+  metadata           Json?
+  uploadedById       String?
+  createdAt          DateTime @default(now())
+
+  uploadedBy User?         @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  usages     ContentMedia[]
+}
+
+model ContentMedia {
+  itemId   String
+  mediaId  String
+  usageKey String
+
+  item  ContentItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  media MediaAsset  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, mediaId, usageKey])
+  @@index([mediaId])
+}
+
+// Roadmap
+model RoadmapBoard {
+  id        String       @id @default(cuid())
+  key       String       @unique // "public" | "internal"
+  name      String
+  items     RoadmapItem[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model RoadmapItem {
+  id          String        @id @default(cuid())
+  boardId     String
+  status      RoadmapStatus @default(PLANNED)
+  priority    Int           @default(0)
+  tags        String[]
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  board        RoadmapBoard            @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdBy    User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  translations RoadmapItemTranslation[]
+  changelog    RoadmapChangelog[]
+
+  @@index([status, priority])
+}
+
+model RoadmapItemTranslation {
+  id          String @id @default(cuid())
+  roadmapItemId String
+  locale      String
+  title       String
+  description String?
+
+  roadmapItem RoadmapItem @relation(fields: [roadmapItemId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapItemId, locale])
+}
+
+model RoadmapChangelog {
+  id           String   @id @default(cuid())
+  roadmapItemId String
+  note         String
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  roadmapItem RoadmapItem @relation(fields: [roadmapItemId], references: [id], onDelete: Cascade)
+  createdBy   User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([roadmapItemId, createdAt])
+}
+
+// Analytics (raw event store)
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  eventName   String
+  occurredAt  DateTime @default(now())
+
+  anonymousId String?
+  userId      String?
+  sessionId   String?
+
+  path     String?
+  referrer String?
+  locale   String?
+  device   Json?
+  props    Json?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventName, occurredAt])
+  @@index([userId, occurredAt])
+}
