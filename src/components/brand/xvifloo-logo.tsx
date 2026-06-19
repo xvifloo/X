@@ -19,40 +19,50 @@ export function XviFlooLogo({
 }: XviFlooLogoProps) {
   const dim = sizes[size].mark;
 
+  // Note: SVG ডার্ক/লাইট—দুইটাই আলাদা।
+  // Site/app এ `.dark` ক্লাস টগল করা হয়, তাই এখানে CSS-based switching করা হয়েছে।
   return (
     <span className={cn("group inline-flex items-center gap-2.5", className)}>
-      <svg
-        width={dim}
-        height={dim}
-        viewBox="0 0 40 40"
-        fill="none"
-        aria-hidden="true"
+      <span
         className="shrink-0 drop-shadow-[0_0_10px_var(--brand-glow)] transition-transform duration-500 group-hover:scale-105"
+        style={{ width: dim, height: dim, display: "inline-flex" }}
+        aria-hidden="true"
       >
-        <rect
-          x="2"
-          y="2"
-          width="36"
-          height="36"
-          rx="10"
-          className="fill-[var(--brand-muted)] stroke-[var(--brand)]"
-          strokeWidth="1"
-        />
-        <path
-          d="M12 28L20 12L28 28"
-          className="stroke-[var(--brand)]"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M15 23H25"
-          className="stroke-foreground/70"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <circle cx="32" cy="10" r="3" className="fill-[var(--brand)]" />
-      </svg>
+        <span className="block dark:hidden" style={{ width: dim, height: dim }}>
+          {/* Light SVG */}
+          <svg
+            viewBox="0 0 59.6387 23.0638"
+            width={dim}
+            height={dim}
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block" }}
+            dangerouslySetInnerHTML={{
+              __html:
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
+                (require("@/../../public/XviFlooSgn-Lgt.svg") as string) ?? "",
+            }}
+          />
+        </span>
+        <span className="hidden dark:block" style={{ width: dim, height: dim }}>
+          {/* Dark SVG */}
+          <svg
+            viewBox="0 0 59.6387 23.0638"
+            width={dim}
+            height={dim}
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block" }}
+            dangerouslySetInnerHTML={{
+              __html:
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
+                (require("@/../../public/XviFlooSgn-Drk.svg") as string) ?? "",
+            }}
+          />
+        </span>
+
+      </span>
+
       {variant === "full" && (
         <span className={cn("font-heading font-semibold tracking-tight", sizes[size].text)}>
           <span className="text-foreground">Xvi</span>
@@ -62,3 +72,4 @@ export function XviFlooLogo({
     </span>
   );
 }
+
