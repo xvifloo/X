@@ -218,6 +218,54 @@
   }
 }
 
+@keyframes menu-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes menu-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
 @keyframes gradient-shift {
   0%,
   100% {
@@ -577,6 +625,27 @@
     animation: glow-pulse 2.6s ease-in-out infinite;
   }
 
+  .scan-line {
+    position: absolute;
+    inset-inline: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--brand) 50%, transparent);
+    animation: scan-sweep 4.5s linear infinite;
+    pointer-events: none;
+  }
+
+  .mobile-menu-backdrop {
+    animation: menu-backdrop-in 0.35s ease-out both;
+  }
+
+  .mobile-menu-panel {
+    animation: menu-panel-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .mobile-menu-item {
+    animation: menu-item-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .badge-status {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[0.62rem] font-medium uppercase tracking-[0.14em];
   }
@@ -610,7 +679,11 @@
   .grid-overlay-animated,
   .caret,
   .glow-pulse,
-  .status-dot::before {
+  .status-dot::before,
+  .mobile-menu-backdrop,
+  .mobile-menu-panel,
+  .mobile-menu-item,
+  .scan-line {
     animation: none !important;
     transition: none !important;
   }

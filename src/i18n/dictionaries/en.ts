@@ -72,6 +72,7 @@ const en = {
       features: {
         bangla: "Bangla Typing",
         unijoy: "Unijoy Support",
+        english: "English Typing",
         html: "HTML Typing",
         css: "CSS Typing",
         javascript: "JavaScript Typing",

@@ -16,36 +16,52 @@ type Particle = {
 
 type Pointer = { x: number; y: number; active: boolean };
 
-type Ripple = { x: number; y: number; born: number; strength: number };
-
 type Pulse = { ax: number; ay: number; bx: number; by: number; born: number; duration: number };
 
-// Ambient constellation — kept deliberately sparse for a clean, premium field.
-const LINK_DISTANCE = 46;
-const CELL_SIZE = LINK_DISTANCE;
+// ============================================================================
+// TUNABLE CONFIGURATION — adjust these to change the feel of the background.
+// ============================================================================
 
-// A single, smooth, attraction-only zone around the cursor — no repulsion,
-// no harsh snapping. Particles settle back to their home slot once released.
-const INTERACTION_RADIUS = 165;
-const INTERACTION_LINK_DISTANCE = 92;
-const ATTRACT_STRENGTH = 0.046;
-const GLOW_RADIUS = 78;
+/** Opacity ceiling for the ambient constellation lines (0–1). Raise this to
+ *  make the network more visible; lower it for a quieter, sparser field. */
+const NETWORK_OPACITY = 0.22;
+
+/** Maximum distance (px) at which two particles will be linked by a line.
+ *  Larger values produce a denser-looking web; smaller values a sparser one. */
+const NETWORK_DISTANCE = 52;
+
+/** Target number of particles across the whole viewport at desktop density.
+ *  Actual count is scaled down automatically on smaller / lower-DPI screens. */
+const PARTICLE_COUNT = 760;
+
+/** Top speed (px/frame) a particle can drift at under its own ambient motion,
+ *  before any pointer or spring forces are applied. Higher = livelier field. */
+const PARTICLE_SPEED = 0.1;
+
+// ----------------------------------------------------------------------------
+// Mouse interaction — soft magnetic influence only. There is intentionally
+// no "web" drawn around the cursor: nearby particles are pulled gently
+// toward it and a soft glow renders underneath, but no connection lines are
+// generated between particles near the pointer.
+// ----------------------------------------------------------------------------
+const INTERACTION_RADIUS = 150;
+const ATTRACT_STRENGTH = 0.034;
+const GLOW_RADIUS = 70;
 
 // Anti-drift system: every particle is anchored to a jittered-grid home
 // position and gently spring-pulled back to it, which guarantees uniform
 // coverage over time regardless of how the cursor wanders.
-const SPRING_K = 0.0014;
-const MAX_LEASH = 150;
+const SPRING_K = 0.0016;
+const MAX_LEASH = 130;
 
-const RIPPLE_LIFE = 760;
-const RIPPLE_WIDTH = 80;
-const RIPPLE_SPEED = 0.58; // px/ms
 const PULSE_DURATION = 1100;
 const PULSE_INTERVAL = 720;
 
+const CELL_SIZE = NETWORK_DISTANCE;
+
 export function ParticleBackground({
-  maxDensity = 2600,
-  maxVelocity = 0.1,
+  maxDensity = PARTICLE_COUNT,
+  maxVelocity = PARTICLE_SPEED,
 }: {
   maxDensity?: number;
   maxVelocity?: number;
@@ -53,7 +69,6 @@ export function ParticleBackground({
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pointerRef = React.useRef<Pointer>({ x: 0, y: 0, active: false });
   const reducedMotionRef = React.useRef(false);
-  const ripplesRef = React.useRef<Ripple[]>([]);
   const pulsesRef = React.useRef<Pulse[]>([]);
   const lastPulseRef = React.useRef(0);
 
@@ -82,9 +97,14 @@ export function ParticleBackground({
       const mobileScale = w < 640 ? 0.45 : w < 1024 ? 0.72 : 1;
       const dpr = window.devicePixelRatio || 1;
       const dprScale = dpr > 2 ? 0.7 : dpr > 1.5 ? 0.85 : 1;
+      // Scale the requested PARTICLE_COUNT by viewport area relative to a
+      // 1440×900 reference screen, so density reads consistently across
+      // very large and ultrawide monitors instead of just thinning out.
+      const referenceArea = 1440 * 900;
+      const areaScale = Math.min(2.2, Math.max(0.35, area / referenceArea));
       const target = Math.max(
-        180,
-        Math.min(maxDensity, Math.floor((area / 340) * mobileScale * dprScale)),
+        160,
+        Math.min(maxDensity * 2.4, Math.floor(maxDensity * areaScale * mobileScale * dprScale)),
       );
       const cols = Math.max(4, Math.round(Math.sqrt((target * w) / h)));
       const rows = Math.max(4, Math.round(target / cols));
@@ -93,7 +113,9 @@ export function ParticleBackground({
 
     // Jittered-grid seeding: every particle gets a "home" slot spread evenly
     // across the viewport, with a randomized offset inside that slot so the
-    // result still reads as organic rather than a visible grid.
+    // result still reads as organic rather than a visible grid. This is also
+    // what guarantees even coverage — there is no region of the screen that
+    // starts (or ends up) emptier than another.
     const seedParticles = () => {
       const { cols, rows } = getGridDims(width, height);
       const cellW = width / cols;
@@ -150,26 +172,6 @@ export function ParticleBackground({
       return grid;
     };
 
-    const applyRippleForces = (p: Particle, now: number) => {
-      for (const ripple of ripplesRef.current) {
-        const age = now - ripple.born;
-        if (age < 0 || age > RIPPLE_LIFE) continue;
-        const radius = age * RIPPLE_SPEED;
-        const dx = p.x - ripple.x;
-        const dy = p.y - ripple.y;
-        const dist = Math.hypot(dx, dy);
-        const band = Math.abs(dist - radius);
-        if (band > RIPPLE_WIDTH) continue;
-        const falloff = 1 - age / RIPPLE_LIFE;
-        const proximity = 1 - band / RIPPLE_WIDTH;
-        const force = proximity * falloff * ripple.strength;
-        if (dist > 0.001) {
-          p.vx += (dx / dist) * force;
-          p.vy += (dy / dist) * force;
-        }
-      }
-    };
-
     const maybeSpawnPulse = (now: number, grid: Map<string, number[]>) => {
       if (now - lastPulseRef.current < PULSE_INTERVAL) return;
       if (pulsesRef.current.length > 4) return;
@@ -190,7 +192,7 @@ export function ParticleBackground({
             const other = particles[idx];
             if (other === origin) continue;
             const d = Math.hypot(other.x - origin.x, other.y - origin.y);
-            if (d < LINK_DISTANCE * 1.4) candidates.push(idx);
+            if (d < NETWORK_DISTANCE * 1.4) candidates.push(idx);
           }
         }
       }
@@ -219,10 +221,7 @@ export function ParticleBackground({
 
       ctx.clearRect(0, 0, width, height);
 
-      ripplesRef.current = ripplesRef.current.filter((r) => now - r.born < RIPPLE_LIFE);
       pulsesRef.current = pulsesRef.current.filter((p) => now - p.born < p.duration);
-
-      const nearPointer: number[] = [];
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -233,6 +232,8 @@ export function ParticleBackground({
           p.vx += (p.homeX - p.x) * SPRING_K;
           p.vy += (p.homeY - p.y) * SPRING_K;
 
+          // Soft magnetic influence only — no connection lines are ever
+          // generated here, just a gentle pull toward the cursor.
           if (pointer.active) {
             const dx = pointer.x - p.x;
             const dy = pointer.y - p.y;
@@ -243,11 +244,8 @@ export function ParticleBackground({
               const force = influence * ATTRACT_STRENGTH;
               p.vx += (dx / dist) * force;
               p.vy += (dy / dist) * force;
-              nearPointer.push(i);
             }
           }
-
-          applyRippleForces(p, now);
 
           p.x += p.vx;
           p.y += p.vy;
@@ -262,7 +260,8 @@ export function ParticleBackground({
           }
 
           // Hard safety leash — guarantees no particle can ever wander far
-          // from its assigned slot, however forces stack up.
+          // from its assigned slot, however forces stack up. This is what
+          // prevents the field from ever clustering toward an edge.
           const hdx = p.x - p.homeX;
           const hdy = p.y - p.homeY;
           const hdist = Math.hypot(hdx, hdy);
@@ -286,15 +285,17 @@ export function ParticleBackground({
         if (p.core) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r * 3.2, 0, Math.PI * 2);
-          ctx.fillStyle = `${brand}14`;
+          ctx.fillStyle = `${brand}16`;
           ctx.fill();
         }
       }
 
-      // Ambient constellation — sparse and faint by design.
+      // Ambient constellation — the only network lines drawn anywhere. These
+      // connect nearby particles to each other regardless of cursor position,
+      // so there is no special "web" effect tied to the mouse.
       const grid = buildGrid();
-      const linkDist2 = LINK_DISTANCE * LINK_DISTANCE;
-      ctx.lineWidth = 0.5;
+      const linkDist2 = NETWORK_DISTANCE * NETWORK_DISTANCE;
+      ctx.lineWidth = 0.6;
 
       for (let i = 0; i < particles.length; i++) {
         const a = particles[i];
@@ -313,10 +314,10 @@ export function ParticleBackground({
               const dy = a.y - b.y;
               const d2 = dx * dx + dy * dy;
               if (d2 < linkDist2) {
-                const base = a.core || b.core ? 0.26 : 0.15;
+                const base = a.core || b.core ? NETWORK_OPACITY * 1.25 : NETWORK_OPACITY;
                 const alpha = (1 - d2 / linkDist2) * base;
                 ctx.globalAlpha = alpha;
-                ctx.strokeStyle = `${brand}55`;
+                ctx.strokeStyle = `${brand}66`;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
                 ctx.lineTo(b.x, b.y);
@@ -359,46 +360,8 @@ export function ParticleBackground({
         }
         ctx.globalAlpha = 1;
 
-        for (const ripple of ripplesRef.current) {
-          const age = now - ripple.born;
-          const radius = age * RIPPLE_SPEED;
-          const fade = 1 - age / RIPPLE_LIFE;
-          if (fade <= 0) continue;
-          ctx.beginPath();
-          ctx.arc(ripple.x, ripple.y, radius, 0, Math.PI * 2);
-          ctx.globalAlpha = fade * 0.18 * ripple.strength;
-          ctx.strokeStyle = `${brand}aa`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-
-        // The cursor's interaction zone — a dynamic, denser network ring
-        // plus a soft glow, replacing any hard push/pull with one smooth field.
-        if (pointer.active && nearPointer.length > 1) {
-          const linkDist2Near = INTERACTION_LINK_DISTANCE * INTERACTION_LINK_DISTANCE;
-          ctx.lineWidth = 0.8;
-          for (let i = 0; i < nearPointer.length; i++) {
-            const a = particles[nearPointer[i]];
-            for (let j = i + 1; j < nearPointer.length; j++) {
-              const b = particles[nearPointer[j]];
-              const dx = a.x - b.x;
-              const dy = a.y - b.y;
-              const d2 = dx * dx + dy * dy;
-              if (d2 < linkDist2Near) {
-                const alpha = (1 - d2 / linkDist2Near) * 0.5;
-                ctx.globalAlpha = alpha;
-                ctx.strokeStyle = `${brand}cc`;
-                ctx.beginPath();
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
-                ctx.stroke();
-              }
-            }
-          }
-          ctx.globalAlpha = 1;
-        }
-
+        // Soft magnetic glow under the cursor — intentionally just a glow,
+        // no particle-to-particle web is drawn here.
         if (pointer.active) {
           const glow = ctx.createRadialGradient(
             pointer.x,
@@ -408,23 +371,12 @@ export function ParticleBackground({
             pointer.y,
             GLOW_RADIUS,
           );
-          glow.addColorStop(0, `${brand}26`);
+          glow.addColorStop(0, `${brand}20`);
           glow.addColorStop(1, `${brand}00`);
           ctx.fillStyle = glow;
           ctx.beginPath();
           ctx.arc(pointer.x, pointer.y, GLOW_RADIUS, 0, Math.PI * 2);
           ctx.fill();
-
-          const ringPulse = 0.14 + 0.04 * Math.sin(now / 900);
-          ctx.beginPath();
-          ctx.arc(pointer.x, pointer.y, INTERACTION_RADIUS, 0, Math.PI * 2);
-          ctx.globalAlpha = ringPulse;
-          ctx.strokeStyle = `${brand}aa`;
-          ctx.lineWidth = 1;
-          ctx.setLineDash([2, 6]);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.globalAlpha = 1;
         }
       }
 
@@ -435,16 +387,6 @@ export function ParticleBackground({
       pointerRef.current = { x: event.clientX, y: event.clientY, active: true };
     };
 
-    const onPointerDown = (event: PointerEvent) => {
-      if (reducedMotionRef.current) return;
-      ripplesRef.current.push({
-        x: event.clientX,
-        y: event.clientY,
-        born: performance.now(),
-        strength: 1.1,
-      });
-    };
-
     const onPointerLeave = () => {
       pointerRef.current.active = false;
     };
@@ -453,13 +395,11 @@ export function ParticleBackground({
     tick();
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerdown", onPointerDown, { passive: true });
     window.addEventListener("pointerleave", onPointerLeave);
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerleave", onPointerLeave);
       motionQuery.removeEventListener("change", onMotionChange);
       window.cancelAnimationFrame(raf);

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Bot, Boxes, Brain, ChevronRight, Cpu, ShoppingBag, Sparkles, Store, Zap } from "lucide-react";
+import { Bot, Boxes, ChevronRight, Cpu, Sparkles, Store } from "lucide-react";
 
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Reveal, SectionShell } from "@/components/home/section-shell";
@@ -174,7 +174,9 @@ export function VisionSection() {
               <Sparkles className="size-3.5 text-[var(--brand)]" aria-hidden="true" />
               <span className="eyebrow">Ecosystem evolution pathway</span>
             </div>
-            <FuturePathSVG />
+            <div className="mx-auto max-w-2xl">
+              <FuturePathSVG />
+            </div>
 
             {/* Phase labels */}
             <div className="mt-2 grid grid-cols-4 gap-2">

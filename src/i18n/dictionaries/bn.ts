@@ -72,6 +72,7 @@ const bn = {
       features: {
         bangla: "বাংলা টাইপিং",
         unijoy: "ইউনিজয় সাপোর্ট",
+        english: "ইংরেজি টাইপিং",
         html: "HTML টাইপিং",
         css: "CSS টাইপিং",
         javascript: "JavaScript টাইপিং",

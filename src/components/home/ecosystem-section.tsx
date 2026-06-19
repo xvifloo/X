@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Activity, Box, Cpu, Database, Globe, Lock, Zap } from "lucide-react";
+import { Activity, Box, Cpu, Database, Globe, Lock, Radio, Zap } from "lucide-react";
 
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Reveal, SectionShell } from "@/components/home/section-shell";
@@ -37,23 +37,33 @@ const NODE_META: Record<
 };
 
 const PLATFORM_LAYERS = [
-  { id: "identity", label: "Identity & Auth", Icon: Lock, col: 1 },
-  { id: "analytics", label: "Analytics", Icon: Activity, col: 2 },
-  { id: "content", label: "Content API", Icon: Database, col: 3 },
-  { id: "compute", label: "Edge Compute", Icon: Cpu, col: 4 },
-  { id: "delivery", label: "Global CDN", Icon: Globe, col: 5 },
-  { id: "infra", label: "Core Infra", Icon: Zap, col: 6 },
+  { id: "identity", label: "Identity & Auth", Icon: Lock },
+  { id: "analytics", label: "Analytics", Icon: Activity },
+  { id: "content", label: "Content API", Icon: Database },
+  { id: "compute", label: "Edge Compute", Icon: Cpu },
+  { id: "delivery", label: "Global CDN", Icon: Globe },
+  { id: "infra", label: "Core Infra", Icon: Zap },
 ] as const;
 
 const PRODUCT_CARDS: Array<{
   key: NodeKey;
-  pos: [number, number]; // % [cx, cy] in the SVG 400×340 space
+  cx: number;
   layer: (typeof PLATFORM_LAYERS)[number]["id"];
 }> = [
-  { key: "typoo", pos: [100, 80], layer: "identity" },
-  { key: "xviGet", pos: [200, 80], layer: "compute" },
-  { key: "kleava", pos: [300, 80], layer: "analytics" },
+  { key: "typoo", cx: 100, layer: "identity" },
+  { key: "xviGet", cx: 220, layer: "compute" },
+  { key: "kleava", cx: 340, layer: "analytics" },
 ];
+
+// Fixed diagram coordinate space — kept constant regardless of viewport so
+// the layout never simply "stretches"; the SVG is capped by a max-width
+// wrapper instead, and extra width on large screens is used for the side
+// telemetry columns rendered alongside it (see EcosystemSection below).
+const W = 440;
+const H = 260;
+const PRODUCT_CY = 60;
+const PLATFORM_Y = 170;
+const LAYER_SPACING = W / (PLATFORM_LAYERS.length + 1);
 
 function FloatingIndicator({
   label,
@@ -68,7 +78,7 @@ function FloatingIndicator({
 }) {
   return (
     <div
-      className="pointer-events-none absolute flex items-center gap-2 rounded-lg border border-border/60 bg-background/80 px-3 py-1.5 backdrop-blur-md"
+      className="pointer-events-none absolute hidden items-center gap-2 rounded-lg border border-border/60 bg-background/85 px-3 py-1.5 backdrop-blur-md sm:flex"
       style={style}
     >
       <span className="size-1.5 rounded-full animate-pulse" style={{ backgroundColor: accent }} />
@@ -82,26 +92,56 @@ function FloatingIndicator({
   );
 }
 
-function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: NodeKey) => void }) {
-  const W = 400;
-  const H = 320;
-  const PLATFORM_Y = 220;
-  const LAYER_SPACING = W / (PLATFORM_LAYERS.length + 1);
-
+function TelemetryColumn({
+  items,
+  align,
+}: {
+  items: Array<{ label: string; value: string; accent: string }>;
+  align: "start" | "end";
+}) {
   return (
-    <div className="relative w-full">
-      {/* Floating live indicators */}
+    <div
+      className={cn(
+        "hidden flex-col gap-3 xl:flex",
+        align === "end" && "items-end text-right",
+      )}
+    >
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="w-full max-w-[10rem] rounded-xl border border-border/50 bg-[var(--surface-1)] px-4 py-3"
+        >
+          <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-muted-foreground">
+            {item.label}
+          </p>
+          <p
+            className="mt-1 font-mono text-lg font-semibold tabular-nums"
+            style={{ color: item.accent }}
+          >
+            {item.value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: NodeKey) => void }) {
+  return (
+    <div className="relative mx-auto w-full max-w-[34rem]">
+      {/* Floating live indicators — hidden on very small screens to avoid
+          ever overlapping the diagram content. */}
       <FloatingIndicator
         label="Uptime"
         value="99.9%"
         accent="var(--brand)"
-        style={{ top: "6%", right: "4%" }}
+        style={{ top: "2%", right: "0%" }}
       />
       <FloatingIndicator
         label="Latency"
         value="12 ms"
         accent="var(--accent-blue)"
-        style={{ bottom: "22%", left: "3%" }}
+        style={{ bottom: "4%", left: "0%" }}
       />
 
       <svg
@@ -109,6 +149,7 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
         className="w-full"
         aria-label="XviFloo infrastructure diagram"
         role="img"
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <radialGradient id="arch-center" cx="50%" cy="50%" r="50%">
@@ -117,50 +158,58 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
           </radialGradient>
           {(["typoo", "xviGet", "kleava"] as NodeKey[]).map((k) => (
             <radialGradient key={k} id={`ng-${k}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={NODE_META[k].accent} stopOpacity="0.2" />
+              <stop offset="0%" stopColor={NODE_META[k].accent} stopOpacity="0.22" />
               <stop offset="100%" stopColor={NODE_META[k].accent} stopOpacity="0" />
             </radialGradient>
           ))}
-          <filter id="node-blur">
+          <filter id="node-blur" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="6" />
           </filter>
-          {/* Animated dash pattern for active edges */}
-          <marker id="arrow-brand" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-            <circle cx="3" cy="3" r="1.5" fill="var(--brand)" />
-          </marker>
+          {(["typoo", "xviGet", "kleava"] as NodeKey[]).map((k) => (
+            <marker
+              key={k}
+              id={`arrow-${k}`}
+              markerWidth="6"
+              markerHeight="6"
+              refX="3"
+              refY="3"
+              orient="auto"
+            >
+              <circle cx="3" cy="3" r="2" fill={NODE_META[k].accent} />
+            </marker>
+          ))}
         </defs>
 
         {/* Ambient center glow */}
-        <ellipse cx={W / 2} cy={PLATFORM_Y} rx="140" ry="40" fill="url(#arch-center)" />
+        <ellipse cx={W / 2} cy={PLATFORM_Y} rx="160" ry="44" fill="url(#arch-center)" />
 
         {/* Platform rail */}
         <rect
-          x="20"
-          y={PLATFORM_Y - 18}
-          width={W - 40}
-          height="36"
-          rx="18"
+          x="18"
+          y={PLATFORM_Y - 16}
+          width={W - 36}
+          height="32"
+          rx="16"
           fill="var(--surface-2)"
           stroke="var(--line-subtle)"
           strokeWidth="1"
         />
         <rect
-          x="20"
-          y={PLATFORM_Y - 18}
-          width={W - 40}
-          height="36"
-          rx="18"
+          x="18"
+          y={PLATFORM_Y - 16}
+          width={W - 36}
+          height="32"
+          rx="16"
           fill="none"
           stroke="var(--brand)"
           strokeWidth="0.5"
           opacity="0.25"
         />
 
-        {/* Platform label */}
         <text
-          x="34"
-          y={PLATFORM_Y + 5}
-          className="fill-muted-foreground font-mono"
+          x="32"
+          y={PLATFORM_Y - 24}
+          className="fill-muted-foreground"
           fontSize="7"
           letterSpacing="1.5"
           style={{ fontFamily: "var(--font-mono, monospace)", textTransform: "uppercase" }}
@@ -168,22 +217,21 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
           XviFloo Platform Core
         </text>
 
-        {/* Layer nodes on the rail */}
+        {/* Layer nodes on the rail — labels sit clearly below the rail with
+            generous clearance so they never collide with its border. */}
         {PLATFORM_LAYERS.map((layer, i) => {
           const cx = (i + 1) * LAYER_SPACING;
           const cy = PLATFORM_Y;
-          const LIcon = layer.Icon;
-          void LIcon;
           return (
             <g key={layer.id}>
-              <circle cx={cx} cy={cy} r="9" fill="var(--surface-1)" stroke="var(--border)" strokeWidth="0.8" />
-              <circle cx={cx} cy={cy} r="3.5" fill="var(--brand)" opacity="0.5" />
+              <circle cx={cx} cy={cy} r="8" fill="var(--surface-1)" stroke="var(--border)" strokeWidth="0.8" />
+              <circle cx={cx} cy={cy} r="3" fill="var(--brand)" opacity="0.55" />
               <text
                 x={cx}
-                y={cy + 18}
+                y={cy + 28}
                 textAnchor="middle"
                 className="fill-muted-foreground"
-                fontSize="5.5"
+                fontSize="5.4"
                 style={{ fontFamily: "var(--font-mono, monospace)" }}
               >
                 {layer.label}
@@ -193,46 +241,47 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
         })}
 
         {/* Product nodes and their connections to the platform */}
-        {PRODUCT_CARDS.map(({ key, pos }) => {
-          const [cx, cy] = pos;
+        {PRODUCT_CARDS.map(({ key, cx, layer }) => {
+          const cy = PRODUCT_CY;
           const meta = NODE_META[key];
           const isActive = active === key;
-          const layerIndex = PLATFORM_LAYERS.findIndex(
-            (l) => l.id === PRODUCT_CARDS.find((pc) => pc.key === key)?.layer,
-          );
+          const layerIndex = PLATFORM_LAYERS.findIndex((l) => l.id === layer);
           const lcx = (layerIndex + 1) * LAYER_SPACING;
           const pathId = `edge-${key}`;
+          const connectorTop = cy + 20;
+          const connectorBottom = PLATFORM_Y - 16;
 
           return (
             <g key={key} className="cursor-pointer" onClick={() => setActive(key)}>
               {/* Glow beneath node */}
               <ellipse
                 cx={cx}
-                cy={cy + 18}
-                rx="28"
-                ry="10"
+                cy={cy + 16}
+                rx="26"
+                ry="9"
                 fill={`url(#ng-${key})`}
                 filter="url(#node-blur)"
                 opacity={isActive ? 1 : 0.4}
                 className="transition-opacity duration-500"
               />
 
-              {/* Vertical connector line */}
+              {/* Connector — gentle S-curve down to its platform layer */}
               <path
                 id={pathId}
-                d={`M ${cx} ${cy + 20} C ${cx} ${PLATFORM_Y - 70} ${lcx} ${PLATFORM_Y - 60} ${lcx} ${PLATFORM_Y - 20}`}
+                d={`M ${cx} ${connectorTop} C ${cx} ${connectorTop + 38} ${lcx} ${connectorBottom - 30} ${lcx} ${connectorBottom}`}
                 fill="none"
                 stroke={meta.accent}
-                strokeWidth={isActive ? 1.2 : 0.5}
+                strokeWidth={isActive ? 1.3 : 0.6}
                 strokeDasharray={isActive ? "none" : "3 4"}
-                opacity={isActive ? 0.75 : 0.3}
+                opacity={isActive ? 0.8 : 0.32}
+                markerEnd={`url(#arrow-${key})`}
                 className="transition-all duration-700"
               />
 
               {/* Traveling data packet */}
-              <circle r="2.2" fill={meta.accent} opacity={isActive ? 1 : 0.4}>
+              <circle r="2" fill={meta.accent} opacity={isActive ? 1 : 0.45}>
                 <animateMotion
-                  dur={`${2.8 + (key === "typoo" ? 0 : key === "xviGet" ? 0.5 : 1)}s`}
+                  dur={`${2.6 + (key === "typoo" ? 0 : key === "xviGet" ? 0.5 : 1)}s`}
                   repeatCount="indefinite"
                   keyPoints="0;1"
                   keyTimes="0;1"
@@ -243,10 +292,27 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
                   attributeName="opacity"
                   values="0;1;1;0"
                   keyTimes="0;0.1;0.85;1"
-                  dur={`${2.8 + (key === "typoo" ? 0 : key === "xviGet" ? 0.5 : 1)}s`}
+                  dur={`${2.6 + (key === "typoo" ? 0 : key === "xviGet" ? 0.5 : 1)}s`}
                   repeatCount="indefinite"
                 />
               </circle>
+
+              {/* "Product" tag — sits clearly above the card with a fixed gap */}
+              <rect x={cx - 26} y={cy - 44} width="52" height="13" rx="5" fill={meta.muted} />
+              <text
+                x={cx}
+                y={cy - 35}
+                textAnchor="middle"
+                fontSize="5.2"
+                style={{
+                  fontFamily: "var(--font-mono, monospace)",
+                  fill: meta.accent,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Product
+              </text>
 
               {/* Node card */}
               <rect
@@ -267,7 +333,7 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
                 x={cx}
                 y={cy - 2}
                 textAnchor="middle"
-                className="fill-foreground font-heading"
+                className="fill-foreground"
                 fontSize="8"
                 fontWeight="600"
                 style={{ fontFamily: "var(--font-display, sans-serif)" }}
@@ -279,7 +345,12 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
                 y={cy + 10}
                 textAnchor="middle"
                 fontSize="6"
-                style={{ fontFamily: "var(--font-mono, monospace)", fill: meta.accent, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                style={{
+                  fontFamily: "var(--font-mono, monospace)",
+                  fill: meta.accent,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
               >
                 {meta.tag}
               </text>
@@ -297,27 +368,8 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
                   style={{ animation: "pulse-ring 2.6s ease-in-out infinite" }}
                 />
               )}
-
-              {/* Box label */}
-              <rect x={cx - 28} y={cy - 40} width="56" height="14" rx="5" fill={meta.muted} />
-              <text
-                x={cx}
-                y={cy - 30}
-                textAnchor="middle"
-                fontSize="5.5"
-                style={{ fontFamily: "var(--font-mono, monospace)", fill: meta.accent, letterSpacing: "0.1em", textTransform: "uppercase" }}
-              >
-                Product
-              </text>
             </g>
           );
-        })}
-
-        {/* Box package icon stand-in using SVG primitives */}
-        {PRODUCT_CARDS.map(({ key, pos }) => {
-          const [cx, cy] = pos;
-          void cx; void cy; void key;
-          return null; // handled above
         })}
       </svg>
     </div>
@@ -333,6 +385,15 @@ export function EcosystemSection() {
   const activeNode = section.nodes[active];
   const nodeKeys: NodeKey[] = ["typoo", "xviGet", "kleava"];
 
+  const leftTelemetry = [
+    { label: "Active nodes", value: "9", accent: "var(--brand)" },
+    { label: "Edge regions", value: "14", accent: "var(--accent-blue)" },
+  ];
+  const rightTelemetry = [
+    { label: "Sync status", value: "Live", accent: meta.accent },
+    { label: "Data packets/s", value: "2.4k", accent: "var(--accent-violet)" },
+  ];
+
   return (
     <SectionShell
       id="ecosystem"
@@ -341,22 +402,30 @@ export function EcosystemSection() {
       subheading={section.subheading}
     >
       <div className="space-y-8">
-        {/* Main architecture diagram */}
+        {/* Main architecture diagram — on xl+ screens, the extra width is
+            used for live telemetry side columns rather than just scaling
+            the diagram itself larger. */}
         <Reveal>
-          <div className="glass-panel relative overflow-hidden rounded-[1.75rem] p-6 md:p-8">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="grid-overlay relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-[var(--surface-glass)] p-6 backdrop-blur-2xl md:p-8">
+            <div className="relative mb-6 flex items-center justify-between">
               <span className="eyebrow-blue">
                 <Box className="size-3" />
                 Infrastructure topology
               </span>
               <span className="flex items-center gap-2">
+                <Radio className="size-3 text-[var(--brand)]" aria-hidden="true" />
                 <span className="status-dot" />
                 <span className="font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-foreground">
                   Live system
                 </span>
               </span>
             </div>
-            <ArchDiagram active={active} setActive={setActive} />
+
+            <div className="relative grid items-center gap-6 xl:grid-cols-[10rem_1fr_10rem]">
+              <TelemetryColumn items={leftTelemetry} align="start" />
+              <ArchDiagram active={active} setActive={setActive} />
+              <TelemetryColumn items={rightTelemetry} align="end" />
+            </div>
           </div>
         </Reveal>
 
@@ -456,9 +525,9 @@ export function EcosystemSection() {
                   {activeNode.description}
                 </p>
               </div>
-              <div className="flex flex-col items-end justify-between gap-4">
+              <div className="flex flex-col items-start gap-4 md:items-end md:justify-between">
                 <span className={cn("badge-status", meta.badge)}>{activeNode.status}</span>
-                <div className="grid grid-cols-2 gap-3 text-right">
+                <div className="grid grid-cols-2 gap-3 text-left md:text-right">
                   {[
                     { label: "API version", value: "v2.0" },
                     { label: "Region", value: "Global" },
