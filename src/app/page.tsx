@@ -14,7 +14,7 @@ function SectionTransition() {
 
 export default function HomePage() {
   return (
-    <SiteShell showNotice>
+    <SiteShell>
       <HeroSection />
       <SectionTransition />
       <EcosystemSection />

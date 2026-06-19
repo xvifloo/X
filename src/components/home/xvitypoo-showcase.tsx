@@ -96,9 +96,36 @@ function WindowChrome({ title }: { title: string }) {
   );
 }
 
+function useSessionTimer() {
+  const [elapsed, setElapsed] = React.useState(0);
+  React.useEffect(() => {
+    const id = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const m = String(Math.floor(elapsed / 60)).padStart(2, "0");
+  const s = String(elapsed % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function useLiveStat(base: number, jitter: number, intervalMs = 900) {
+  const [val, setVal] = React.useState(base);
+  React.useEffect(() => {
+    const id = window.setInterval(
+      () => setVal(base + Math.floor((Math.random() * 2 - 1) * jitter)),
+      intervalMs,
+    );
+    return () => window.clearInterval(id);
+  }, [base, jitter, intervalMs]);
+  return val;
+}
+
 function TypingPreview({ feature }: { feature: "bangla" | "unijoy" }) {
   const [typed, setTyped] = React.useState(0);
   const reducedRef = React.useRef(false);
+  const wpm = useLiveStat(86, 4);
+  const cpm = useLiveStat(432, 14);
+  const acc = useLiveStat(98, 1);
+  const timer = useSessionTimer();
 
   React.useEffect(() => {
     reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -123,10 +150,18 @@ function TypingPreview({ feature }: { feature: "bangla" | "unijoy" }) {
     <div>
       <WindowChrome title="XviTypoo — Typing Test" />
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-          Bangla · {feature === "unijoy" ? "Unijoy layout" : "Avro layout"}
-        </span>
-        <span className="badge-status badge-live">Recording</span>
+        <div className="flex items-center gap-2">
+          <span className="status-dot" aria-hidden="true" />
+          <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
+            Bangla · {feature === "unijoy" ? "Unijoy" : "Avro"}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted-foreground">
+            {timer}
+          </span>
+          <span className="badge-status badge-live">Recording</span>
+        </div>
       </div>
       <p
         dir="auto"
@@ -136,22 +171,28 @@ function TypingPreview({ feature }: { feature: "bangla" | "unijoy" }) {
         <span className="caret inline-block h-6 w-[2px] -translate-y-0.5 bg-[var(--brand)] align-middle" />
         <span className="text-muted-foreground/35">{BANGLA_SAMPLE.slice(visible)}</span>
       </p>
-      <div className="mt-6 grid grid-cols-3 gap-4 border-t border-border/50 pt-5">
+      <div className="mt-6 grid grid-cols-4 gap-3 border-t border-border/50 pt-5">
         {[
-          { label: "WPM", value: "86" },
-          { label: "Accuracy", value: "98%" },
-          { label: "Streak", value: "12d" },
+          { label: "WPM", value: String(wpm), accent: "var(--brand)" },
+          { label: "CPM", value: String(cpm), accent: "var(--brand)" },
+          { label: "Accuracy", value: `${Math.max(95, acc)}%`, accent: "var(--accent-blue)" },
+          { label: "Streak", value: "12d", accent: "var(--accent-violet)" },
         ].map((stat) => (
           <div key={stat.label}>
-            <p className="font-heading text-2xl font-semibold tracking-tight">{stat.value}</p>
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p
+              className="font-heading text-xl font-semibold tracking-tight tabular-nums transition-all duration-300"
+              style={{ color: stat.accent }}
+            >
+              {stat.value}
+            </p>
+            <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
               {stat.label}
             </p>
           </div>
         ))}
       </div>
-      <p className="mt-4 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground/70">
-        Sample session — illustrative
+      <p className="mt-3 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-muted-foreground/60">
+        Illustrative demo session
       </p>
     </div>
   );

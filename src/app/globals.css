@@ -471,36 +471,83 @@
 
   .hover-lift {
     @apply transition-all duration-500 ease-out;
+    will-change: transform;
   }
 
   .hover-lift:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px) scale(1.008);
+  }
+
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-24px);
+    transition:
+      opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-left.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .shimmer-border {
+    position: relative;
+  }
+
+  .shimmer-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--brand) 55%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 1px;
+    pointer-events: none;
+    animation: gradient-shift 3.5s ease-in-out infinite;
   }
 
   .card-elevated {
     @apply relative rounded-2xl border border-border/60 bg-[var(--surface-1)] transition-all duration-500 ease-out;
     box-shadow: var(--shadow-card);
+    will-change: transform, box-shadow;
   }
 
   .card-elevated:hover {
-    border-color: color-mix(in srgb, var(--brand) 32%, var(--border));
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
     box-shadow: var(--shadow-card-hover);
-    transform: translateY(-4px);
+    transform: translateY(-5px) scale(1.005);
   }
 
   .glass-panel {
     background: var(--surface-glass);
     border: 1px solid var(--line-subtle);
-    backdrop-filter: blur(22px) saturate(140%);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
     box-shadow: var(--shadow-panel);
   }
 
+  .glass-panel-vivid {
+    background: var(--surface-glass);
+    border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--line-subtle));
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: var(--shadow-panel), 0 0 0 1px color-mix(in srgb, var(--brand) 8%, transparent);
+  }
+
   .grid-overlay {
-    background-image: 
-      linear-gradient(color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px), /* গ্রিড লাইনের অপাসিটি বাড়ানো হয়েছে */
-      linear-gradient(90deg, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px); /* গ্রিড লাইনের অপাসিটি বাড়ানো হয়েছে */
-    background-size: 80px 80px; /* গ্রিড সেলের আকার বাড়ানো হয়েছে */
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 
   .grid-overlay-animated {
