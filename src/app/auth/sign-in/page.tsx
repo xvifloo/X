@@ -26,14 +26,22 @@ export default function SignInPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Button size="lg" className="h-11 rounded-full" onClick={() => signIn("github")}>
+            <Button size="lg" className="h-11 rounded-full" onClick={() =>
+  signIn("github", {
+    callbackUrl: "/admin",
+  })
+}>
               Continue with GitHub
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="h-11 rounded-full"
-              onClick={() => signIn("google")}
+              onClick={() =>
+  signIn("google", {
+    callbackUrl: "/admin",
+  })
+}
             >
               Continue with Google
             </Button>
