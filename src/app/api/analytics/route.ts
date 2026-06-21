@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db/prisma";
-
-type JsonPrimitive = string | number | boolean | null;
-type JsonObject = { [key: string]: JsonValue };
-type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
+import type { JsonObject } from "@/lib/json";
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as null | {

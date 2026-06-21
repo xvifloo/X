@@ -11,6 +11,8 @@ import {
   Languages,
   MonitorSmartphone,
   Sparkles,
+  Type,
+  Users,
 } from "lucide-react";
 
 import { XviTypooLogo } from "@/components/brand/xvitypoo-logo";
@@ -23,6 +25,7 @@ import { cn } from "@/lib/utils";
 type FeatureKey =
   | "bangla"
   | "unijoy"
+  | "english"
   | "html"
   | "css"
   | "javascript"
@@ -33,6 +36,7 @@ type FeatureKey =
 const FEATURE_ICONS: Record<FeatureKey, typeof Languages> = {
   bangla: Languages,
   unijoy: Keyboard,
+  english: Type,
   html: Code2,
   css: Sparkles,
   javascript: Braces,
@@ -44,6 +48,7 @@ const FEATURE_ICONS: Record<FeatureKey, typeof Languages> = {
 const FEATURE_GROUP: Record<FeatureKey, "typing" | "code" | "platform"> = {
   bangla: "typing",
   unijoy: "typing",
+  english: "typing",
   html: "code",
   css: "code",
   javascript: "code",
@@ -55,6 +60,7 @@ const FEATURE_GROUP: Record<FeatureKey, "typing" | "code" | "platform"> = {
 const TYPOO_URL = "https://typoo.xvifloo.com";
 
 const BANGLA_SAMPLE = "আমি বাংলায় টাইপ করি, প্রতিদিন আরও দ্রুত।";
+const ENGLISH_SAMPLE = "Precision typing, measured in real time, every single keystroke.";
 
 const CODE_SNIPPETS: Record<"html" | "css" | "javascript", { lines: { text: string; cls: string }[][] }> = {
   html: {
@@ -119,41 +125,47 @@ function useLiveStat(base: number, jitter: number, intervalMs = 900) {
   return val;
 }
 
-function TypingPreview({ feature }: { feature: "bangla" | "unijoy" }) {
+function TypingPreview({ feature }: { feature: "bangla" | "unijoy" | "english" }) {
+  const sample = feature === "english" ? ENGLISH_SAMPLE : BANGLA_SAMPLE;
   const [typed, setTyped] = React.useState(0);
   const reducedRef = React.useRef(false);
-  const wpm = useLiveStat(86, 4);
-  const cpm = useLiveStat(432, 14);
+  const wpm = useLiveStat(feature === "english" ? 72 : 86, 4);
+  const cpm = useLiveStat(feature === "english" ? 360 : 432, 14);
   const acc = useLiveStat(98, 1);
+  const activeUsers = useLiveStat(1284, 22, 1300);
   const timer = useSessionTimer();
 
   React.useEffect(() => {
     reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedRef.current) {
-      setTyped(BANGLA_SAMPLE.length);
+      setTyped(sample.length);
       return;
     }
 
+    setTyped(0);
     const id = window.setInterval(() => {
       setTyped((prev) => {
-        if (prev >= BANGLA_SAMPLE.length + 14) return 0;
+        if (prev >= sample.length + 14) return 0;
         return prev + 1;
       });
     }, 95);
 
     return () => window.clearInterval(id);
-  }, []);
+  }, [sample]);
 
-  const visible = Math.min(typed, BANGLA_SAMPLE.length);
+  const visible = Math.min(typed, sample.length);
+  const languageLabel =
+    feature === "english" ? "English" : `Bangla · ${feature === "unijoy" ? "Unijoy" : "Avro"}`;
 
   return (
-    <div>
+    <div className="relative overflow-hidden">
+      <span className="scan-line" />
       <WindowChrome title="XviTypoo — Typing Test" />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="status-dot" aria-hidden="true" />
           <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-            Bangla · {feature === "unijoy" ? "Unijoy" : "Avro"}
+            {languageLabel}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -164,28 +176,32 @@ function TypingPreview({ feature }: { feature: "bangla" | "unijoy" }) {
         </div>
       </div>
       <p
-        dir="auto"
+        dir={feature === "english" ? "ltr" : "auto"}
         className="mt-5 min-h-20 font-heading text-xl leading-relaxed tracking-tight sm:text-2xl"
       >
-        <span className="text-foreground">{BANGLA_SAMPLE.slice(0, visible)}</span>
+        <span className="text-foreground">{sample.slice(0, visible)}</span>
         <span className="caret inline-block h-6 w-[2px] -translate-y-0.5 bg-[var(--brand)] align-middle" />
-        <span className="text-muted-foreground/35">{BANGLA_SAMPLE.slice(visible)}</span>
+        <span className="text-muted-foreground/35">{sample.slice(visible)}</span>
       </p>
       <div className="mt-6 grid grid-cols-4 gap-3 border-t border-border/50 pt-5">
         {[
           { label: "WPM", value: String(wpm), accent: "var(--brand)" },
           { label: "CPM", value: String(cpm), accent: "var(--brand)" },
           { label: "Accuracy", value: `${Math.max(95, acc)}%`, accent: "var(--accent-blue)" },
-          { label: "Streak", value: "12d", accent: "var(--accent-violet)" },
+          {
+            label: "Active users",
+            value: activeUsers.toLocaleString(),
+            accent: "var(--accent-violet)",
+          },
         ].map((stat) => (
           <div key={stat.label}>
             <p
-              className="font-heading text-xl font-semibold tracking-tight tabular-nums transition-all duration-300"
+              className="font-heading text-base font-semibold tracking-tight tabular-nums transition-all duration-300 sm:text-xl"
               style={{ color: stat.accent }}
             >
               {stat.value}
             </p>
-            <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="font-mono text-[0.55rem] uppercase tracking-[0.12em] text-muted-foreground sm:text-[0.58rem] sm:tracking-[0.16em]">
               {stat.label}
             </p>
           </div>
@@ -202,7 +218,8 @@ function CodePreview({ feature }: { feature: "html" | "css" | "javascript" }) {
   const tabs: Array<"html" | "css" | "javascript"> = ["html", "css", "javascript"];
 
   return (
-    <div>
+    <div className="relative overflow-hidden">
+      <span className="scan-line" />
       <WindowChrome title="XviTypoo — Code Mode" />
       <div className="flex gap-1.5">
         {tabs.map((tab) => (
@@ -309,7 +326,9 @@ function TypooPreviewPanel({ feature }: { feature: FeatureKey }) {
 
   return (
     <div className="glass-panel relative overflow-hidden rounded-[1.5rem] p-6 md:p-7">
-      {group === "typing" && <TypingPreview feature={feature as "bangla" | "unijoy"} />}
+      {group === "typing" && (
+        <TypingPreview feature={feature as "bangla" | "unijoy" | "english"} />
+      )}
       {group === "code" && <CodePreview feature={feature as "html" | "css" | "javascript"} />}
       {group === "platform" && (
         <PlatformPreview feature={feature as "analytics" | "browser" | "noInstall"} />
@@ -358,7 +377,13 @@ export function XviTypooShowcase() {
                         <span>Xvi</span>
                         <span className="text-[var(--brand)]">Typoo</span>
                       </p>
-                      <span className="badge-status badge-live mt-2">Live</span>
+                      <div className="mt-2 flex items-center gap-3">
+                        <span className="badge-status badge-live">Live</span>
+                        <span className="flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-muted-foreground">
+                          <Users className="size-3" aria-hidden="true" />
+                          1,284 typing now
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -376,7 +401,7 @@ export function XviTypooShowcase() {
               </Reveal>
 
               <Reveal delay={120}>
-                <ul className="grid gap-3 sm:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-3">
                   {(Object.keys(features) as FeatureKey[]).map((key, i) => {
                     const Icon = FEATURE_ICONS[key];
                     const isHovered = activeFeature === key;

@@ -25,6 +25,13 @@ enum RoadmapStatus {
   SHIPPED
 }
 
+enum ProductStatus {
+  LIVE
+  BUILDING
+  RESEARCH
+  ARCHIVED
+}
+
 model User {
   id            String     @id @default(cuid())
   name          String?
@@ -296,7 +303,47 @@ model RoadmapChangelog {
   @@index([roadmapItemId, createdAt])
 }
 
-// Analytics (raw event store)
+// Product registry — the ecosystem's products (XviTypoo, XviGet, Kleava AI, ...)
+// managed from the admin panel instead of being hardcoded in the frontend.
+model Product {
+  id          String        @id @default(cuid())
+  key         String        @unique // e.g. "xvitypoo", "xviget", "kleava"
+  status      ProductStatus @default(RESEARCH)
+  accentColor String        @default("#17b79b")
+  externalUrl String?
+  sortOrder   Int           @default(0)
+
+  translations ProductTranslation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductTranslation {
+  id        String  @id @default(cuid())
+  productId String
+  locale    String // "en" | "bn"
+  name      String
+  tagline   String?
+  description String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([locale])
+}
+
+// Site-wide configuration, edited from the admin Settings screen.
+// Stored as flexible key/value rows so new settings don't require migrations.
+model SiteSetting {
+  key         String   @id
+  value       Json
+  description String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([updatedById])
+}
 model AnalyticsEvent {
   id          String   @id @default(cuid())
   eventName   String

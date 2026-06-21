@@ -136,14 +136,12 @@ function MilestoneCard({
   milestone,
   product,
   accent,
-  statusLabels,
   isActive,
   onClick,
 }: {
   milestone: Milestone;
   product: ProductKey;
   accent: Accent;
-  statusLabels: Record<MilestoneStatus, string>;
   isActive: boolean;
   onClick: () => void;
 }) {
@@ -233,6 +231,190 @@ function MilestoneCard({
   );
 }
 
+function RoadmapNetworkPath({
+  milestones,
+  accent,
+  activeKey,
+  onSelect,
+}: {
+  milestones: Milestone[];
+  accent: Accent;
+  activeKey: string;
+  onSelect: (key: string) => void;
+}) {
+  const W = 760;
+  const H = 120;
+  const Y = 60;
+  const count = milestones.length;
+  const spacing = W / (count + 1);
+  const positions = milestones.map((_, i) => (i + 1) * spacing);
+
+  return (
+    <div className="mx-auto w-full max-w-[44rem] overflow-x-auto">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="h-auto w-full min-w-[640px]"
+        role="img"
+        aria-label="Roadmap progress network"
+      >
+        <defs>
+          <radialGradient id="roadmap-node-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={accent.accent} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={accent.accent} stopOpacity="0" />
+          </radialGradient>
+          <marker id="roadmap-arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <circle cx="3" cy="3" r="1.6" fill={accent.accent} />
+          </marker>
+        </defs>
+
+        {/* Base rail connecting every node — faint, always present */}
+        <line
+          x1={positions[0]}
+          y1={Y}
+          x2={positions[positions.length - 1]}
+          y2={Y}
+          stroke="var(--line-subtle)"
+          strokeWidth="2"
+        />
+
+        {/* Segment-by-segment progress overlay + traveling packets */}
+        {positions.slice(0, -1).map((x, i) => {
+          const next = positions[i + 1];
+          const milestone = milestones[i];
+          const segId = `roadmap-seg-${milestone.key}`;
+          const isLit = milestone.status === "done" || milestone.status === "active";
+
+          return (
+            <g key={milestone.key}>
+              <line
+                id={segId}
+                x1={x}
+                y1={Y}
+                x2={next}
+                y2={Y}
+                stroke={accent.accent}
+                strokeWidth="2.5"
+                strokeDasharray={milestone.status === "done" ? "none" : "5 5"}
+                opacity={isLit ? 0.8 : 0}
+                markerEnd={milestone.status === "done" ? "url(#roadmap-arrow)" : undefined}
+                style={{ transition: "opacity 0.6s ease" }}
+              />
+              {isLit && (
+                <circle r="2.6" fill={accent.accent}>
+                  <animateMotion
+                    dur="2.2s"
+                    repeatCount="indefinite"
+                    keyPoints="0;1"
+                    keyTimes="0;1"
+                    path={`M ${x} ${Y} L ${next} ${Y}`}
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0;1;1;0"
+                    keyTimes="0;0.1;0.85;1"
+                    dur="2.2s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Nodes */}
+        {milestones.map((milestone, i) => {
+          const x = positions[i];
+          const isActive = activeKey === milestone.key;
+          const isDone = milestone.status === "done";
+          const isInProgress = milestone.status === "active";
+
+          return (
+            <g
+              key={milestone.key}
+              className="cursor-pointer"
+              onClick={() => onSelect(milestone.key)}
+            >
+              <circle cx={x} cy={Y} r="22" fill="url(#roadmap-node-glow)" opacity={isActive ? 1 : 0.4} />
+
+              {isInProgress && (
+                <circle
+                  cx={x}
+                  cy={Y}
+                  r="14"
+                  fill="none"
+                  stroke={accent.accent}
+                  strokeWidth="1"
+                  strokeDasharray="2 3"
+                  opacity="0.6"
+                  style={{
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                    animation: "orbit-spin 10s linear infinite",
+                  }}
+                />
+              )}
+
+              <circle
+                cx={x}
+                cy={Y}
+                r="9"
+                fill={isDone ? accent.accent : isInProgress ? accent.muted : "var(--surface-1)"}
+                stroke={accent.accent}
+                strokeWidth={isDone ? 0 : 1.6}
+                strokeDasharray={milestone.status === "upcoming" ? "2 2" : "none"}
+                opacity={milestone.status === "upcoming" ? 0.55 : 1}
+                style={{
+                  filter: isActive ? `drop-shadow(0 0 10px ${accent.glow})` : "none",
+                  transition: "all 0.4s ease",
+                }}
+              />
+
+              {isDone && (
+                <path
+                  d={`M ${x - 3.2} ${Y} l 2 2.2 l 4.4 -4.8`}
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
+
+              <text
+                x={x}
+                y={Y + 32}
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight={isActive ? 700 : 500}
+                style={{
+                  fontFamily: "var(--font-mono, monospace)",
+                  fill: isActive ? accent.accent : "var(--muted-foreground)",
+                  transition: "fill 0.3s ease",
+                }}
+              >
+                {milestone.label}
+              </text>
+
+              {isActive && (
+                <circle
+                  cx={x}
+                  cy={Y}
+                  r="18"
+                  fill="none"
+                  stroke={accent.accent}
+                  strokeWidth="0.8"
+                  opacity="0.4"
+                  style={{ animation: "pulse-ring 2.4s ease-in-out infinite" }}
+                />
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 export function RoadmapSection() {
   const { dict } = useI18n();
   const section = dict.home.roadmap;
@@ -291,6 +473,31 @@ export function RoadmapSection() {
         </div>
       </Reveal>
 
+      {/* Network-style progress path — visually ties the roadmap to the
+          ecosystem architecture diagram above it on the page. */}
+      <Reveal delay={40}>
+        <div className="grid-overlay relative mb-10 overflow-hidden rounded-[1.75rem] border border-border/50 bg-[var(--surface-glass)] p-6 backdrop-blur-2xl md:p-8">
+          <div className="relative mb-6 flex flex-wrap items-center justify-between gap-3">
+            <span className="eyebrow-blue">
+              <Zap className="size-3" />
+              Build path
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="status-dot" />
+              <span className="font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-foreground">
+                {current.name}
+              </span>
+            </span>
+          </div>
+          <RoadmapNetworkPath
+            milestones={current.milestones}
+            accent={accent}
+            activeKey={activeKey}
+            onSelect={setActiveKey}
+          />
+        </div>
+      </Reveal>
+
       <Reveal delay={80}>
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* Milestone cards column */}
@@ -301,7 +508,6 @@ export function RoadmapSection() {
                 milestone={milestone}
                 product={product}
                 accent={accent}
-                statusLabels={section.statusLabels}
                 isActive={activeKey === milestone.key}
                 onClick={() => setActiveKey(milestone.key)}
               />
