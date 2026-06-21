@@ -25,7 +25,13 @@ export async function middleware(request: NextRequest) {
 
   if (!isAllowed) {
     const signInUrl = new URL("/auth/sign-in", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    // Pathname + search only (never the full request.url) — this is what
+    // keeps callbackUrl a single clean value instead of letting it carry an
+    // already-nested callbackUrl from a previous redirect.
+    signInUrl.searchParams.set(
+      "callbackUrl",
+      request.nextUrl.pathname + request.nextUrl.search,
+    );
     return NextResponse.redirect(signInUrl);
   }
 
