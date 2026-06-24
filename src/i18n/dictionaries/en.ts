@@ -21,12 +21,12 @@ const en = {
   },
   home: {
     hero: {
-      eyebrow: "XviFloo Ecosystem",
-      heading: "One ecosystem. Infinite innovation.",
+      eyebrow: "Explore the Ecosystem",
+      heading: "One platform. Infinite possibilities.",
       subheading:
         "XviFloo unifies productivity, AI, and future-ready products into a single premium platform — built for builders, teams, and the next decade of digital work.",
-      primaryCta: "Explore ecosystem",
-      secondaryCta: "View roadmap",
+      primaryCta: "Explore Ecosystem",
+      secondaryCta: "View Roadmap",
       stats: {
         products: { label: "Products", value: 3, suffix: "+" },
         languages: { label: "Languages", value: 2, suffix: "" },

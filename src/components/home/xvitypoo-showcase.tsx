@@ -3,16 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  BarChart3,
-  Braces,
-  Code2,
-  Globe,
-  Keyboard,
-  Languages,
-  MonitorSmartphone,
-  Sparkles,
-  Type,
-  Users,
+  BarChart3, Braces, Code2, Globe, Hash,
+  Keyboard, Languages, MonitorSmartphone, Type,
 } from "lucide-react";
 
 import { XviTypooLogo } from "@/components/brand/xvitypoo-logo";
@@ -23,69 +15,109 @@ import { trackEvent } from "@/lib/analytics/track-event";
 import { cn } from "@/lib/utils";
 
 type FeatureKey =
-  | "bangla"
-  | "unijoy"
-  | "english"
-  | "html"
-  | "css"
-  | "javascript"
-  | "analytics"
-  | "browser"
-  | "noInstall";
+  | "bangla" | "unijoy" | "english"
+  | "html" | "css" | "javascript"
+  | "analytics" | "browser" | "noInstall";
 
 const FEATURE_ICONS: Record<FeatureKey, typeof Languages> = {
-  bangla: Languages,
-  unijoy: Keyboard,
-  english: Type,
-  html: Code2,
-  css: Sparkles,
-  javascript: Braces,
-  analytics: BarChart3,
-  browser: Globe,
-  noInstall: MonitorSmartphone,
-};
-
-const FEATURE_GROUP: Record<FeatureKey, "typing" | "code" | "platform"> = {
-  bangla: "typing",
-  unijoy: "typing",
-  english: "typing",
-  html: "code",
-  css: "code",
-  javascript: "code",
-  analytics: "platform",
-  browser: "platform",
-  noInstall: "platform",
+  bangla: Languages, unijoy: Keyboard, english: Type,
+  html: Code2, css: Braces, javascript: Hash,
+  analytics: BarChart3, browser: Globe, noInstall: MonitorSmartphone,
 };
 
 const TYPOO_URL = "https://typoo.xvifloo.com";
 
-const BANGLA_SAMPLE = "আমি বাংলায় টাইপ করি, প্রতিদিন আরও দ্রুত।";
-const ENGLISH_SAMPLE = "Precision typing, measured in real time, every single keystroke.";
-
-const CODE_SNIPPETS: Record<"html" | "css" | "javascript", { lines: { text: string; cls: string }[][] }> = {
-  html: {
-    lines: [
-      [{ text: "<section", cls: "text-[var(--accent-blue)]" }, { text: " class=", cls: "text-muted-foreground" }, { text: '"hero"', cls: "text-[var(--brand)]" }, { text: ">", cls: "text-[var(--accent-blue)]" }],
-      [{ text: "  <h1>", cls: "text-[var(--accent-blue)]" }, { text: "Build faster", cls: "text-foreground" }, { text: "</h1>", cls: "text-[var(--accent-blue)]" }],
-      [{ text: "</section>", cls: "text-[var(--accent-blue)]" }],
-    ],
-  },
-  css: {
-    lines: [
-      [{ text: ".hero ", cls: "text-[var(--brand)]" }, { text: "{", cls: "text-muted-foreground" }],
-      [{ text: "  display: ", cls: "text-[var(--accent-violet)]" }, { text: "grid;", cls: "text-foreground" }],
-      [{ text: "  gap: ", cls: "text-[var(--accent-violet)]" }, { text: "2rem;", cls: "text-foreground" }],
-      [{ text: "}", cls: "text-muted-foreground" }],
-    ],
-  },
-  javascript: {
-    lines: [
-      [{ text: "function ", cls: "text-[var(--accent-violet)]" }, { text: "sum", cls: "text-[var(--accent-blue)]" }, { text: "(a, b) {", cls: "text-foreground" }],
-      [{ text: "  return ", cls: "text-[var(--accent-violet)]" }, { text: "a + b;", cls: "text-foreground" }],
-      [{ text: "}", cls: "text-foreground" }],
-    ],
-  },
+// ── Typing mode data ──────────────────────────────────────────────────────────
+type TypingMode = {
+  id: string;
+  label: string;
+  lang: string;
+  sample: string;
+  dir: "ltr" | "rtl" | "auto";
+  wpmBase: number;   // realistic WPM for this mode
+  cpmBase: number;
 };
+
+const TYPING_MODES: TypingMode[] = [
+  {
+    id: "bangla",
+    label: "বাংলা",
+    lang: "Bangla · Avro",
+    sample: "আমি বাংলায় টাইপ করি, প্রতিদিন আরও দ্রুত হচ্ছি।",
+    dir: "auto",
+    wpmBase: 38,
+    cpmBase: 190,
+  },
+  {
+    id: "unijoy",
+    label: "ইউনিজয়",
+    lang: "Bangla · Unijoy",
+    sample: "বাংলা ভাষায় দ্রুত টাইপিং একটি দক্ষতা যা অনুশীলনে আসে।",
+    dir: "auto",
+    wpmBase: 42,
+    cpmBase: 210,
+  },
+  {
+    id: "english",
+    label: "English",
+    lang: "English",
+    sample: "Precision typing, measured in real time, every single keystroke counts.",
+    dir: "ltr",
+    wpmBase: 68,
+    cpmBase: 340,
+  },
+  {
+    id: "code",
+    label: "Code",
+    lang: "JavaScript",
+    sample: "const sum = (a, b) => a + b; // fast fingers, clean code.",
+    dir: "ltr",
+    wpmBase: 34,
+    cpmBase: 170,
+  },
+  {
+    id: "digits",
+    label: "1234",
+    lang: "Digits",
+    sample: "3.14159  2718  1024  9801  42  6.02e23  299792458  1337",
+    dir: "ltr",
+    wpmBase: 55,
+    cpmBase: 275,
+  },
+  {
+    id: "symbols",
+    label: "!@#",
+    lang: "Symbols",
+    sample: "!@#$%^&*()_+-=[]{}|;':\",./<>? — all tested, all counted.",
+    dir: "ltr",
+    wpmBase: 28,
+    cpmBase: 140,
+  },
+];
+
+const CYCLES_PER_MODE = 5; // complete sample cycles before auto-advancing
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function useSessionTimer() {
+  const [elapsed, setElapsed] = React.useState(0);
+  React.useEffect(() => {
+    const id = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
+}
+
+function useLiveStat(base: number, jitter: number, ms = 950) {
+  const [val, setVal] = React.useState(base);
+  React.useEffect(() => {
+    const id = window.setInterval(
+      () => setVal(base + Math.floor((Math.random() * 2 - 1) * jitter)),
+      ms,
+    );
+    return () => window.clearInterval(id);
+  }, [base, jitter, ms]);
+  return val;
+}
 
 function WindowChrome({ title }: { title: string }) {
   return (
@@ -102,241 +134,143 @@ function WindowChrome({ title }: { title: string }) {
   );
 }
 
-function useSessionTimer() {
-  const [elapsed, setElapsed] = React.useState(0);
-  React.useEffect(() => {
-    const id = window.setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  const m = String(Math.floor(elapsed / 60)).padStart(2, "0");
-  const s = String(elapsed % 60).padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-function useLiveStat(base: number, jitter: number, intervalMs = 900) {
-  const [val, setVal] = React.useState(base);
-  React.useEffect(() => {
-    const id = window.setInterval(
-      () => setVal(base + Math.floor((Math.random() * 2 - 1) * jitter)),
-      intervalMs,
-    );
-    return () => window.clearInterval(id);
-  }, [base, jitter, intervalMs]);
-  return val;
-}
-
-function TypingPreview({ feature }: { feature: "bangla" | "unijoy" | "english" }) {
-  const sample = feature === "english" ? ENGLISH_SAMPLE : BANGLA_SAMPLE;
+// ── Main cycling preview ──────────────────────────────────────────────────────
+function TypingCyclePreview() {
+  const [modeIdx, setModeIdx] = React.useState(0);
   const [typed, setTyped] = React.useState(0);
-  const reducedRef = React.useRef(false);
-  const wpm = useLiveStat(feature === "english" ? 72 : 86, 4);
-  const cpm = useLiveStat(feature === "english" ? 360 : 432, 14);
-  const acc = useLiveStat(98, 1);
-  const activeUsers = useLiveStat(1284, 22, 1300);
+  const [cycleCount, setCycleCount] = React.useState(0);
+  const reducedMotion = React.useRef(false);
+
+  const mode = TYPING_MODES[modeIdx];
+  const wpm  = useLiveStat(mode.wpmBase, 3, 950);
+  const cpm  = useLiveStat(mode.cpmBase, 10, 950);
+  const acc  = useLiveStat(97, 1, 1200);
+  const netWpm = Math.max(0, wpm - Math.floor(Math.random() * 3)); // net = gross – errors
   const timer = useSessionTimer();
 
+  // Advance mode after CYCLES_PER_MODE completions
   React.useEffect(() => {
-    reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedRef.current) {
-      setTyped(sample.length);
-      return;
+    if (cycleCount >= CYCLES_PER_MODE) {
+      setModeIdx((prev) => (prev + 1) % TYPING_MODES.length);
+      setTyped(0);
+      setCycleCount(0);
     }
+  }, [cycleCount]);
 
+  React.useEffect(() => {
+    reducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setTyped(0);
+    setCycleCount(0);
+    if (reducedMotion.current) { setTyped(mode.sample.length); return; }
+
     const id = window.setInterval(() => {
       setTyped((prev) => {
-        if (prev >= sample.length + 14) return 0;
+        if (prev >= mode.sample.length) {
+          setCycleCount((c) => c + 1);
+          return 0;
+        }
         return prev + 1;
       });
-    }, 95);
-
+    }, 85);
     return () => window.clearInterval(id);
-  }, [sample]);
+  }, [modeIdx, mode.sample.length]);
 
-  const visible = Math.min(typed, sample.length);
-  const languageLabel =
-    feature === "english" ? "English" : `Bangla · ${feature === "unijoy" ? "Unijoy" : "Avro"}`;
+  const visible = Math.min(typed, mode.sample.length);
 
   return (
-    <div className="relative overflow-hidden">
-      <span className="scan-line" />
-      <WindowChrome title="XviTypoo — Typing Test" />
+    <div className="relative overflow-hidden rounded-[1.5rem] border border-border/40 bg-[var(--surface-glass)] p-6 backdrop-blur-2xl md:p-8">
+      <span className="scan-line" aria-hidden="true" />
+      <WindowChrome title="XviTypoo — Live Session" />
+
+      {/* Mode tabs */}
+      <div className="mb-5 flex flex-wrap gap-1.5">
+        {TYPING_MODES.map((m, i) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => { setModeIdx(i); setTyped(0); setCycleCount(0); }}
+            className={cn(
+              "rounded-full px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.12em] transition-all duration-300",
+              i === modeIdx
+                ? "bg-[var(--brand)] text-white shadow-[0_0_12px_var(--brand-glow)]"
+                : "bg-[var(--surface-2)] text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Status bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="status-dot" aria-hidden="true" />
-          <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-            {languageLabel}
+          <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[var(--brand)]">
+            {mode.lang}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-muted-foreground">
             {timer}
           </span>
-          <span className="badge-status badge-live">Recording</span>
+          <span className="badge-status badge-live">● REC</span>
         </div>
       </div>
+
+      {/* Typing text */}
       <p
-        dir={feature === "english" ? "ltr" : "auto"}
-        className="mt-5 min-h-20 font-heading text-xl leading-relaxed tracking-tight sm:text-2xl"
+        dir={mode.dir}
+        className="mt-5 min-h-[5rem] font-heading text-lg leading-relaxed tracking-tight sm:text-xl"
       >
-        <span className="text-foreground">{sample.slice(0, visible)}</span>
-        <span className="caret inline-block h-6 w-[2px] -translate-y-0.5 bg-[var(--brand)] align-middle" />
-        <span className="text-muted-foreground/35">{sample.slice(visible)}</span>
+        <span className="text-foreground">{mode.sample.slice(0, visible)}</span>
+        <span className="caret inline-block h-5 w-[2px] -translate-y-0.5 bg-[var(--brand)] align-middle" />
+        <span className="text-muted-foreground/30">{mode.sample.slice(visible)}</span>
       </p>
-      <div className="mt-6 grid grid-cols-4 gap-3 border-t border-border/50 pt-5">
+
+      {/* Cycle dots */}
+      <div className="mt-3 flex items-center gap-1">
+        {Array.from({ length: CYCLES_PER_MODE }, (_, i) => (
+          <span
+            key={i}
+            className="size-1.5 rounded-full transition-colors duration-300"
+            style={{ backgroundColor: i < cycleCount ? "var(--brand)" : "var(--border)" }}
+            aria-hidden="true"
+          />
+        ))}
+        <span className="ml-1.5 font-mono text-[0.55rem] text-muted-foreground/70">
+          {cycleCount}/{CYCLES_PER_MODE}
+        </span>
+      </div>
+
+      {/* Stats — 4 metrics */}
+      <div className="mt-5 grid grid-cols-4 gap-2 border-t border-border/40 pt-4">
         {[
-          { label: "WPM", value: String(wpm), accent: "var(--brand)" },
-          { label: "CPM", value: String(cpm), accent: "var(--brand)" },
-          { label: "Accuracy", value: `${Math.max(95, acc)}%`, accent: "var(--accent-blue)" },
-          {
-            label: "Active users",
-            value: activeUsers.toLocaleString(),
-            accent: "var(--accent-violet)",
-          },
+          { label: "WPM",      value: String(wpm),          accent: "var(--brand)" },
+          { label: "Net WPM",  value: String(netWpm),       accent: "var(--accent-blue)" },
+          { label: "CPM",      value: String(cpm),          accent: "var(--accent-violet)" },
+          { label: "Accuracy", value: `${Math.max(94, acc)}%`, accent: "var(--brand)" },
         ].map((stat) => (
           <div key={stat.label}>
             <p
-              className="font-heading text-base font-semibold tracking-tight tabular-nums transition-all duration-300 sm:text-xl"
+              className="font-heading text-base font-semibold tabular-nums transition-all duration-300 sm:text-lg"
               style={{ color: stat.accent }}
             >
               {stat.value}
             </p>
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.12em] text-muted-foreground sm:text-[0.58rem] sm:tracking-[0.16em]">
+            <p className="font-mono text-[0.52rem] uppercase tracking-[0.1em] text-muted-foreground sm:text-[0.55rem]">
               {stat.label}
             </p>
           </div>
         ))}
       </div>
-      <p className="mt-3 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-muted-foreground/60">
-        Illustrative demo session
+      <p className="mt-2 font-mono text-[0.52rem] uppercase tracking-[0.12em] text-muted-foreground/50">
+        Illustrative demo · auto-cycles every {CYCLES_PER_MODE} passes
       </p>
     </div>
   );
 }
 
-function CodePreview({ feature }: { feature: "html" | "css" | "javascript" }) {
-  const tabs: Array<"html" | "css" | "javascript"> = ["html", "css", "javascript"];
-
-  return (
-    <div className="relative overflow-hidden">
-      <span className="scan-line" />
-      <WindowChrome title="XviTypoo — Code Mode" />
-      <div className="flex gap-1.5">
-        {tabs.map((tab) => (
-          <span
-            key={tab}
-            className={cn(
-              "rounded-md px-2.5 py-1 font-mono text-[0.65rem] uppercase tracking-[0.1em] transition-colors duration-300",
-              tab === feature
-                ? "bg-[var(--brand-muted)] text-[var(--brand)]"
-                : "text-muted-foreground",
-            )}
-          >
-            {tab === "javascript" ? "js" : tab}
-          </span>
-        ))}
-      </div>
-      <pre className="mt-5 min-h-32 overflow-x-auto rounded-xl bg-[var(--surface-2)] p-4 font-mono text-sm leading-relaxed">
-        {CODE_SNIPPETS[feature].lines.map((line, i) => (
-          <div key={i}>
-            {line.map((seg, j) => (
-              <span key={j} className={seg.cls}>
-                {seg.text}
-              </span>
-            ))}
-          </div>
-        ))}
-      </pre>
-      <div className="mt-6 flex items-center gap-6 border-t border-border/50 pt-5 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
-        <span>112 CPM</span>
-        <span>0 errors</span>
-        <span className="text-[var(--brand)]">Syntax-aware</span>
-      </div>
-    </div>
-  );
-}
-
-function PlatformPreview({ feature }: { feature: "analytics" | "browser" | "noInstall" }) {
-  return (
-    <div>
-      <WindowChrome title="XviTypoo — Platform" />
-      {feature === "analytics" && (
-        <div>
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-            Progress, visualized
-          </p>
-          <div className="mt-5 flex h-28 items-end gap-2">
-            {[38, 52, 46, 64, 58, 74, 70].map((h, i) => (
-              <span
-                key={i}
-                className="flex-1 rounded-t-md bg-gradient-to-t from-[var(--brand)] to-[var(--brand)]/40"
-                style={{ height: `${h}%` }}
-              />
-            ))}
-          </div>
-          <div className="mt-5 flex gap-8 border-t border-border/50 pt-5 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
-            <span>+18% this week</span>
-            <span>24 sessions</span>
-          </div>
-        </div>
-      )}
-
-      {feature === "browser" && (
-        <div>
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-            Runs anywhere
-          </p>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            No extensions, no plugins. XviTypoo runs entirely in the browser tab you already have
-            open.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["Chrome", "Firefox", "Safari", "Edge"].map((b) => (
-              <span
-                key={b}
-                className="rounded-full border border-border/60 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-muted-foreground"
-              >
-                {b}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {feature === "noInstall" && (
-        <div>
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[var(--brand)]">
-            Zero install
-          </p>
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/60 bg-[var(--surface-2)] px-4 py-3">
-            <span className="size-2 rounded-full bg-[var(--brand)]" />
-            <span className="truncate font-mono text-sm text-muted-foreground">{TYPOO_URL}</span>
-          </div>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Open the link and start typing. There is nothing to download or configure.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TypooPreviewPanel({ feature }: { feature: FeatureKey }) {
-  const group = FEATURE_GROUP[feature];
-
-  return (
-    <div className="glass-panel relative overflow-hidden rounded-[1.5rem] p-6 md:p-7">
-      {group === "typing" && (
-        <TypingPreview feature={feature as "bangla" | "unijoy" | "english"} />
-      )}
-      {group === "code" && <CodePreview feature={feature as "html" | "css" | "javascript"} />}
-      {group === "platform" && (
-        <PlatformPreview feature={feature as "analytics" | "browser" | "noInstall"} />
-      )}
-    </div>
-  );
-}
-
+// ── Showcase ──────────────────────────────────────────────────────────────────
 export function XviTypooShowcase() {
   const { dict } = useI18n();
   const section = dict.home.typoo;
@@ -345,7 +279,7 @@ export function XviTypooShowcase() {
   const activeFeature: FeatureKey = hovered ?? "bangla";
 
   const handleLaunch = () => {
-    trackEvent({
+    void trackEvent({
       eventName: "xvitypoo_launch_click",
       props: { destination: TYPOO_URL, source: "homepage_showcase" },
     });
@@ -353,84 +287,77 @@ export function XviTypooShowcase() {
 
   return (
     <section id="xvitypoo" className="section-pad scroll-mt-20">
-      <div className="mx-auto w-full max-w-7xl">
-        <div className="relative overflow-hidden rounded-[2rem] border border-border/50 bg-gradient-to-br from-[var(--brand-muted)] via-background to-background p-8 md:p-14 lg:p-16">
+      <div className="mx-auto w-full max-w-[90rem]">
+        <div className="relative overflow-hidden rounded-[2rem] border border-border/50 bg-gradient-to-br from-[var(--brand-muted)] via-background to-[var(--accent-violet-muted)] p-6 md:p-10 lg:p-12">
           <div
-            className="glow-orb pointer-events-none absolute -right-20 -top-20 size-72 opacity-60"
+            className="glow-orb pointer-events-none absolute -right-20 -top-20 size-72 opacity-50"
+            aria-hidden="true"
+          />
+          <div
+            className="glow-orb-violet pointer-events-none absolute -bottom-12 -left-12 size-56 opacity-30"
             aria-hidden="true"
           />
 
-          <div className="relative grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-            <div className="space-y-10">
+          <div className="relative grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+            {/* Left col */}
+            <div className="space-y-8">
               <Reveal>
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <p className="eyebrow">{section.eyebrow}</p>
-                  <h2 className="text-display-sm max-w-xl">{section.heading}</h2>
-                  <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+                  <h2 className="text-display-sm max-w-lg">
+                    <span className="text-foreground">XviTypoo —&nbsp;</span>
+                    <span className="section-gradient-text">precision typing,</span>
+                    <span className="text-foreground"> reimagined</span>
+                  </h2>
+                  <p className="max-w-md text-base leading-relaxed text-muted-foreground">
                     {section.subheading}
                   </p>
 
-                  <div className="flex items-center gap-5">
+                  {/* Logo + badge */}
+                  <div className="flex items-center gap-4">
                     <XviTypooLogo size="md" />
                     <div>
-                      <p className="text-xl font-semibold tracking-tight">
-                        <span>Xvi</span>
-                        <span className="text-[var(--brand)]">Typoo</span>
-                      </p>
-                      <div className="mt-2 flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <span className="badge-status badge-live">Live</span>
-                        <span className="flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-muted-foreground">
-                          <Users className="size-3" aria-hidden="true" />
-                          1,284 typing now
+                        <span className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-muted-foreground">
+                          production
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <Button asChild size="lg" className="h-12 rounded-full px-8">
-                    <Link
-                      href={TYPOO_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={handleLaunch}
-                    >
+                    <Link href={TYPOO_URL} target="_blank" rel="noopener noreferrer" onClick={handleLaunch}>
                       {section.cta}
                     </Link>
                   </Button>
                 </div>
               </Reveal>
 
-              <Reveal delay={120}>
-                <ul className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-3">
+              <Reveal delay={100}>
+                <ul className="grid grid-cols-2 gap-2 lg:grid-cols-3">
                   {(Object.keys(features) as FeatureKey[]).map((key, i) => {
                     const Icon = FEATURE_ICONS[key];
-                    const isHovered = activeFeature === key;
-
+                    const isActive = activeFeature === key;
                     return (
                       <li key={key}>
                         <button
                           type="button"
                           onMouseEnter={() => setHovered(key)}
                           onMouseLeave={() => setHovered(null)}
-                          onFocus={() => setHovered(key)}
-                          onBlur={() => setHovered(null)}
                           className={cn(
-                            "hover-lift group flex w-full items-center gap-4 rounded-2xl border border-border/50 bg-background/60 p-4 text-left backdrop-blur-sm",
-                            isHovered && "border-[var(--brand)]/40 shadow-[0_8px_32px_var(--brand-glow)]",
+                            "hover-lift flex w-full items-center gap-2 rounded-xl border border-border/50 bg-background/50 px-3 py-2.5 text-left backdrop-blur-sm transition-all duration-300",
+                            isActive && "border-[var(--brand)]/40 bg-[var(--brand-muted)]",
                           )}
-                          style={{ transitionDelay: `${i * 30}ms` }}
+                          style={{ transitionDelay: `${i * 25}ms` }}
                         >
-                          <span
-                            className={cn(
-                              "flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-500",
-                              isHovered
-                                ? "bg-[var(--brand)] text-white"
-                                : "bg-[var(--brand-muted)] text-[var(--brand)]",
-                            )}
-                          >
-                            <Icon className="size-4" aria-hidden="true" />
+                          <span className={cn(
+                            "flex size-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-300",
+                            isActive ? "bg-[var(--brand)] text-white" : "bg-[var(--brand-muted)] text-[var(--brand)]",
+                          )}>
+                            <Icon className="size-3" aria-hidden="true" />
                           </span>
-                          <span className="text-sm font-medium">{features[key]}</span>
+                          <span className="truncate text-xs font-medium">{features[key]}</span>
                         </button>
                       </li>
                     );
@@ -439,8 +366,9 @@ export function XviTypooShowcase() {
               </Reveal>
             </div>
 
-            <Reveal delay={160} className="lg:sticky lg:top-28">
-              <TypooPreviewPanel feature={activeFeature} />
+            {/* Right col — always shows the cycling demo */}
+            <Reveal delay={140} className="lg:sticky lg:top-28">
+              <TypingCyclePreview />
             </Reveal>
           </div>
         </div>

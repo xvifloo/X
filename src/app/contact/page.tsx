@@ -43,7 +43,7 @@ export default function ContactPage() {
   return (
     <SiteShell>
       <section className="section-pad">
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full max-w-[90rem]">
           <Reveal>
             <div className="max-w-2xl">
               <p className="eyebrow">{section.eyebrow}</p>

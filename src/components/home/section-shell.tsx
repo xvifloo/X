@@ -73,6 +73,31 @@ export function Reveal({ children, className, delay = 0 }: RevealProps) {
   );
 }
 
+/**
+ * Splits a heading into two visual halves:
+ *   • First half — plain foreground (white/dark)
+ *   • Second half — animated 3-colour gradient (brand teal → blue → violet)
+ *
+ * Splitting at roughly halfway through the word list keeps both halves
+ * balanced regardless of the actual copy. Each half is rendered as a
+ * separate inline block so the break always falls between words.
+ */
+function SplitHeading({ text, isHero }: { text: string; isHero: boolean }) {
+  const words = text.split(" ");
+  const splitAt = Math.max(1, Math.floor(words.length / 2));
+  const firstHalf = words.slice(0, splitAt).join(" ");
+  const secondHalf = words.slice(splitAt).join(" ");
+
+  const cls = cn(isHero ? "text-display" : "text-display-sm", "text-balance");
+
+  return (
+    <h2 className={cls}>
+      <span className="text-foreground">{firstHalf} </span>
+      <span className="section-gradient-text">{secondHalf}</span>
+    </h2>
+  );
+}
+
 type SectionShellProps = {
   id?: string;
   eyebrow?: string;
@@ -98,29 +123,22 @@ export function SectionShell({
 
   return (
     <section id={id} className={cn("section-pad scroll-mt-20", className)}>
-      <div className="mx-auto w-full max-w-7xl">
+      <div className="mx-auto w-full max-w-[90rem]">
         <Reveal>
           <header
             className={cn(
-              "mb-16 space-y-5 md:mb-20",
-              align === "center" && "mx-auto max-w-4xl text-center",
-              !isHero && "max-w-3xl",
+              "mb-14 space-y-4 md:mb-18",
+              align === "center" && "mx-auto max-w-3xl text-center",
+              align !== "center" && "max-w-4xl",
             )}
           >
             {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-            <h2
-              className={cn(
-                isHero ? "text-display" : "text-display-sm",
-                "text-balance",
-              )}
-            >
-              {heading}
-            </h2>
+            <SplitHeading text={heading} isHero={isHero} />
             {subheading && (
               <p
                 className={cn(
                   "text-pretty leading-relaxed text-muted-foreground",
-                  isHero ? "max-w-2xl text-lg md:text-xl" : "text-base md:text-lg",
+                  isHero ? "max-w-2xl text-lg md:text-xl" : "max-w-2xl text-base md:text-lg",
                   align === "center" && "mx-auto",
                 )}
               >

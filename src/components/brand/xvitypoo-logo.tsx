@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
 type XviTypooLogoProps = {
@@ -5,68 +8,40 @@ type XviTypooLogoProps = {
   size?: "sm" | "md" | "lg";
 };
 
-const sizes = { sm: 32, md: 48, lg: 64 };
+const heights: Record<NonNullable<XviTypooLogoProps["size"]>, number> = {
+  sm: 22,
+  md: 28,
+  lg: 36,
+};
+
+const textSizes: Record<NonNullable<XviTypooLogoProps["size"]>, string> = {
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-xl",
+};
 
 export function XviTypooLogo({ className, size = "md" }: XviTypooLogoProps) {
-  const dim = sizes[size];
+  const h = heights[size];
+  const [imgFailed, setImgFailed] = React.useState(false);
 
   return (
-    <svg
-      width={dim}
-      height={dim}
-      viewBox="0 0 64 64"
-      fill="none"
-      aria-hidden="true"
-      className={cn("shrink-0 drop-shadow-[0_0_10px_var(--brand-glow)]", className)}
-    >
-      <rect
-        x="6"
-        y="10"
-        width="52"
-        height="44"
-        rx="12"
-        className="fill-[var(--brand-muted)] stroke-[var(--brand)]"
-        strokeWidth="1.5"
-      />
-      <rect
-        x="14"
-        y="20"
-        width="10"
-        height="10"
-        rx="2.5"
-        className="fill-background stroke-border"
-        strokeWidth="1"
-      />
-      <rect
-        x="27"
-        y="20"
-        width="10"
-        height="10"
-        rx="2.5"
-        className="fill-background stroke-border"
-        strokeWidth="1"
-      />
-      <rect
-        x="40"
-        y="20"
-        width="10"
-        height="10"
-        rx="2.5"
-        className="fill-[var(--brand)]"
-      />
-      <path
-        d="M14 38H50"
-        className="stroke-foreground/30"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 44H38"
-        className="stroke-[var(--brand)]"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle cx="50" cy="44" r="3" className="fill-[var(--brand)]" />
-    </svg>
+    <span className={cn("inline-flex items-center", className)}>
+      {imgFailed ? (
+        <span className={cn("font-heading font-semibold tracking-tight", textSizes[size])}>
+          <span className="text-foreground">Xvi</span>
+          <span className="text-[var(--brand)]">Typoo</span>
+        </span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/XviTypooTxtL.svg"
+          alt="XviTypoo"
+          height={h}
+          className="h-auto object-contain"
+          style={{ height: h, width: "auto" }}
+          onError={() => setImgFailed(true)}
+        />
+      )}
+    </span>
   );
 }

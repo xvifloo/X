@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "XviFloo — Technology Ecosystem Platform",
   description:
     "XviFloo unifies XviTypoo, XviGet, and Kleava AI into one premium ecosystem for productivity, AI, and future-ready innovation.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "XviFloo — Technology Ecosystem Platform",
     description:

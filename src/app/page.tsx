@@ -9,7 +9,7 @@ import { XviTypooShowcase } from "@/components/home/xvitypoo-showcase";
 import { SiteShell } from "@/components/site/site-shell";
 
 function SectionTransition() {
-  return <div className="section-divider mx-auto w-full max-w-7xl px-6 md:px-8" aria-hidden="true" />;
+  return <div className="section-divider mx-auto w-full max-w-[90rem] px-4 sm:px-6 md:px-8" aria-hidden="true" />;
 }
 
 export default function HomePage() {

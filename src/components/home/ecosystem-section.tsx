@@ -128,7 +128,7 @@ function TelemetryColumn({
 
 function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: NodeKey) => void }) {
   return (
-    <div className="relative mx-auto w-full max-w-[34rem]">
+    <div className="relative mx-auto w-full max-w-[38rem] lg:max-w-[44rem]">
       {/* Floating live indicators — hidden on very small screens to avoid
           ever overlapping the diagram content. */}
       <FloatingIndicator
