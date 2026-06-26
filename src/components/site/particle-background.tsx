@@ -219,6 +219,12 @@ export function ParticleBackground({
       const brand =
         getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "#17b79b";
 
+      // Detect light mode and boost all opacity values so the network is
+      // clearly visible against the light background — in dark mode the
+      // default values keep the field subtle and premium.
+      const isLight = !document.documentElement.classList.contains("dark");
+      const opacityMult = isLight ? 2.2 : 1.0;
+
       ctx.clearRect(0, 0, width, height);
 
       pulsesRef.current = pulsesRef.current.filter((p) => now - p.born < p.duration);
@@ -273,7 +279,10 @@ export function ParticleBackground({
         }
 
         const twinkle = reduced ? 1 : 0.72 + 0.28 * Math.sin(now / 1400 + p.twinklePhase);
-        const alphaHex = Math.round((p.core ? 0xaa : 0x66) * twinkle)
+        const baseAlpha = isLight
+          ? (p.core ? 0xcc : 0x88)   // significantly more opaque in light mode
+          : (p.core ? 0xaa : 0x66);
+        const alphaHex = Math.round(baseAlpha * twinkle)
           .toString(16)
           .padStart(2, "0");
 
@@ -285,7 +294,7 @@ export function ParticleBackground({
         if (p.core) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r * 3.2, 0, Math.PI * 2);
-          ctx.fillStyle = `${brand}16`;
+          ctx.fillStyle = isLight ? `${brand}28` : `${brand}16`;
           ctx.fill();
         }
       }
@@ -314,10 +323,10 @@ export function ParticleBackground({
               const dy = a.y - b.y;
               const d2 = dx * dx + dy * dy;
               if (d2 < linkDist2) {
-                const base = a.core || b.core ? NETWORK_OPACITY * 1.25 : NETWORK_OPACITY;
+                const base = (a.core || b.core ? NETWORK_OPACITY * 1.25 : NETWORK_OPACITY) * opacityMult;
                 const alpha = (1 - d2 / linkDist2) * base;
-                ctx.globalAlpha = alpha;
-                ctx.strokeStyle = `${brand}66`;
+                ctx.globalAlpha = Math.min(1, alpha);
+                ctx.strokeStyle = isLight ? `${brand}99` : `${brand}66`;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
                 ctx.lineTo(b.x, b.y);

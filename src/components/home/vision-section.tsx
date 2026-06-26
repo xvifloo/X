@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Bot, Boxes, ChevronRight, Cpu, Sparkles, Store } from "lucide-react";
+import { ChevronRight, CircuitBoard, Cloud, Cpu, Layers3, Sparkles } from "lucide-react";
 
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Reveal, SectionShell } from "@/components/home/section-shell";
@@ -49,7 +49,7 @@ const TIMELINE = [
 const VISION_ITEMS = [
   {
     key: "xvifloo",
-    Icon: Boxes,
+    Icon: Layers3,        // Platform — layered stack
     accent: "var(--brand)",
     muted: "var(--brand-muted)",
     glow: "var(--brand-glow)",
@@ -57,7 +57,7 @@ const VISION_ITEMS = [
   },
   {
     key: "xviGet",
-    Icon: Cpu,
+    Icon: CircuitBoard,   // Engine — circuit/compute feel
     accent: "var(--accent-blue)",
     muted: "var(--accent-blue-muted)",
     glow: "var(--accent-blue-glow)",
@@ -65,7 +65,7 @@ const VISION_ITEMS = [
   },
   {
     key: "kleava",
-    Icon: Bot,
+    Icon: Cpu,            // AI — processing / neural
     accent: "var(--accent-violet)",
     muted: "var(--accent-violet-muted)",
     glow: "var(--accent-violet-glow)",
@@ -73,7 +73,7 @@ const VISION_ITEMS = [
   },
   {
     key: "commerce",
-    Icon: Store,
+    Icon: Cloud,          // Commerce — cloud-native delivery
     accent: "var(--brand)",
     muted: "var(--brand-muted)",
     glow: "var(--brand-glow)",

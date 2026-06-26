@@ -407,15 +407,44 @@
   }
 
   .glass-header {
-    @apply border-b border-border/40 bg-background/65 backdrop-blur-2xl;
+    @apply border-b border-border/40 bg-background/80 backdrop-blur-2xl;
+  }
+
+  /* ── Alternating section backgrounds ─────────────────────────────── */
+  /* Dark variant — slightly darker than the dark theme background */
+  .section-dark-bg {
+    background-color: oklch(0.038 0.012 252);
+  }
+
+  /* Light variant — clean near-white */
+  .section-light-bg {
+    background-color: oklch(0.97 0.005 200);
+  }
+
+  /* Override for light theme */
+  :root .section-dark-bg {
+    background-color: color-mix(in srgb, #17b79b 7%, oklch(0.14 0.018 230));
+  }
+
+  :root .section-light-bg {
+    background-color: oklch(0.985 0.004 200);
+  }
+
+  /* Dark theme overrides */
+  .dark .section-dark-bg {
+    background-color: oklch(0.035 0.012 252);
+  }
+
+  .dark .section-light-bg {
+    background-color: oklch(0.07 0.014 252);
   }
 
   .section-gradient-text {
     background: linear-gradient(
       105deg,
-      #17b79b 0%,
-      var(--accent-blue) 50%,
-      var(--accent-violet) 100%
+      #3B82F6 0%,
+      #8B5CF6 48%,
+      #17B79B 100%
     );
     background-size: 250% auto;
     -webkit-background-clip: text;
@@ -427,10 +456,10 @@
   .hero-gradient-text {
     background: linear-gradient(
       110deg,
-      #17b79b 0%,
-      var(--accent-blue) 42%,
-      var(--accent-violet) 75%,
-      #17b79b 100%
+      #17B79B 0%,
+      #3B82F6 38%,
+      #8B5CF6 68%,
+      #17B79B 100%
     );
     background-size: 250% auto;
     -webkit-background-clip: text;
@@ -655,16 +684,18 @@
     pointer-events: none;
   }
 
-  .mobile-menu-backdrop {
-    animation: menu-backdrop-in 0.35s ease-out both;
-  }
-
   .mobile-menu-panel {
     animation: menu-panel-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .mobile-menu-item {
     animation: menu-item-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Custom cursor — applied via JS; the CSS rule here ensures it takes effect
+     globally without needing to wait for React hydration. */
+  .cursor-none-active * {
+    cursor: none !important;
   }
 
   .badge-status {
@@ -702,7 +733,6 @@
   .caret,
   .glow-pulse,
   .status-dot::before,
-  .mobile-menu-backdrop,
   .mobile-menu-panel,
   .mobile-menu-item,
   .scan-line {

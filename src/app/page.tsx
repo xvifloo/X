@@ -6,26 +6,41 @@ import { HeroSection } from "@/components/home/hero-section";
 import { RoadmapSection } from "@/components/home/roadmap-section";
 import { VisionSection } from "@/components/home/vision-section";
 import { XviTypooShowcase } from "@/components/home/xvitypoo-showcase";
+import { SectionBg } from "@/components/site/section-bg";
 import { SiteShell } from "@/components/site/site-shell";
-
-function SectionTransition() {
-  return <div className="section-divider mx-auto w-full max-w-[90rem] px-4 sm:px-6 md:px-8" aria-hidden="true" />;
-}
 
 export default function HomePage() {
   return (
     <SiteShell>
-      <HeroSection />
-      <SectionTransition />
-      <EcosystemSection />
-      <SectionTransition />
-      <XviTypooShowcase />
-      <SectionTransition />
-      <RoadmapSection />
-      <SectionTransition />
-      <VisionSection />
-      <SectionTransition />
-      <FeaturesSection />
+      {/* Section 1 — Dark (hero) */}
+      <SectionBg index={1}>
+        <HeroSection />
+      </SectionBg>
+
+      {/* Section 2 — Light */}
+      <SectionBg index={2}>
+        <EcosystemSection />
+      </SectionBg>
+
+      {/* Section 3 — Dark */}
+      <SectionBg index={3}>
+        <XviTypooShowcase />
+      </SectionBg>
+
+      {/* Section 4 — Light */}
+      <SectionBg index={4}>
+        <RoadmapSection />
+      </SectionBg>
+
+      {/* Section 5 — Dark */}
+      <SectionBg index={5}>
+        <VisionSection />
+      </SectionBg>
+
+      {/* Section 6 — Light */}
+      <SectionBg index={6}>
+        <FeaturesSection />
+      </SectionBg>
     </SiteShell>
   );
 }

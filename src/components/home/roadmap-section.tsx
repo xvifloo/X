@@ -20,7 +20,7 @@ type Milestone = {
 type Accent = { accent: string; muted: string; glow: string };
 
 const PRODUCT_ACCENT: Record<ProductKey, Accent> = {
-  xviGet: { accent: "var(--accent-blue)",   muted: "var(--accent-blue-muted)",   glow: "var(--accent-blue-glow)" },
+  xviGet: { accent: "#17B79B", muted: "color-mix(in srgb, #17B79B 14%, transparent)", glow: "color-mix(in srgb, #17B79B 40%, transparent)" },
   kleava: { accent: "var(--accent-violet)", muted: "var(--accent-violet-muted)", glow: "var(--accent-violet-glow)" },
 };
 
@@ -172,7 +172,7 @@ function MilestoneRow({
           </div>
 
           {/* Progress bar */}
-          <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-[var(--surface-2)]">
+          <div className="mt-2.5 h-2 overflow-hidden rounded-full" style={{ background: "var(--surface-2)" }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
@@ -180,6 +180,7 @@ function MilestoneRow({
                 background: milestone.progress > 0
                   ? `linear-gradient(90deg, ${accent.accent}, color-mix(in srgb, ${accent.accent} 55%, white))`
                   : "transparent",
+                boxShadow: milestone.progress > 0 ? `0 0 8px ${accent.glow}` : "none",
               }}
             />
           </div>
@@ -220,6 +221,14 @@ export function RoadmapSection() {
   const section = dict.home.roadmap;
   const [product, setProduct] = React.useState<ProductKey>("xviGet");
   const [activeKey, setActiveKey] = React.useState<string>("development");
+
+  // Read ?product= from URL so footer links navigate directly to the right tab
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get("product");
+    if (p === "kleava") setProduct("kleava");
+    else setProduct("xviGet");
+  }, []);
 
   const current = section.products[product];
   const accent  = PRODUCT_ACCENT[product];

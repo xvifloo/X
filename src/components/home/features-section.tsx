@@ -225,6 +225,69 @@ export function FeaturesSection() {
           );
         })}
       </div>
+
+      {/* ── Get In Touch ─────────────────────────────────────────────── */}
+      <Reveal delay={200}>
+        <div className="mt-16 overflow-hidden rounded-[2rem] border border-border/40 md:mt-20">
+          <div
+            className="relative px-8 py-12 md:px-14 md:py-16"
+            style={{
+              background: "linear-gradient(135deg, var(--brand-muted) 0%, var(--background) 50%, var(--accent-violet-muted) 100%)",
+            }}
+          >
+            {/* Decorative orbs */}
+            <div className="glow-orb pointer-events-none absolute -right-16 -top-10 size-56 opacity-40" aria-hidden="true" />
+            <div className="glow-orb-violet pointer-events-none absolute -bottom-10 -left-12 size-40 opacity-25" aria-hidden="true" />
+
+            <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
+              <div className="space-y-4">
+                <p className="eyebrow">
+                  <span className="status-dot" aria-hidden="true" />
+                  Get In Touch
+                </p>
+                <h2 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+                  <span className="text-foreground">Have a question or </span>
+                  <span className="hero-gradient-text">partnership idea?</span>
+                </h2>
+                <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+                  We&apos;re always glad to hear from builders, partners, and curious minds exploring the XviFloo ecosystem.
+                </p>
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <a
+                    href="/contact"
+                    className="group relative inline-flex h-11 items-center gap-2 overflow-hidden rounded-full bg-[var(--brand)] px-6 text-sm font-semibold text-white transition-all duration-500 hover:shadow-[0_0_28px_-4px_var(--brand-glow-strong)]"
+                  >
+                    <span className="pointer-events-none absolute inset-0 translate-x-[-100%] skew-x-[-16deg] bg-white/15 transition-transform duration-700 group-hover:translate-x-[120%]" aria-hidden="true" />
+                    <span className="relative">Send a message</span>
+                  </a>
+                  <a
+                    href="mailto:contact@xvifloo.com"
+                    className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 px-6 text-sm font-medium text-foreground/75 transition-all duration-300 hover:border-[var(--brand)]/40 hover:bg-[var(--brand-muted)] hover:text-[var(--brand)]"
+                  >
+                    contact@xvifloo.com
+                  </a>
+                </div>
+              </div>
+
+              {/* Stats mini-grid */}
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
+                {[
+                  { label: "Products", value: "3", sub: "in ecosystem" },
+                  { label: "Response time", value: "&lt;24h", sub: "business days" },
+                ].map((item) => (
+                  <div key={item.label}
+                    className="rounded-2xl border border-border/40 bg-background/50 px-5 py-4 backdrop-blur-sm">
+                    <p className="font-heading text-2xl font-bold text-[var(--brand)]"
+                      dangerouslySetInnerHTML={{ __html: item.value }} />
+                    <p className="mt-0.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
+                    <p className="font-mono text-[0.55rem] text-muted-foreground/60">{item.sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
     </SectionShell>
   );
 }
