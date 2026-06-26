@@ -57,6 +57,13 @@ function useSessionTimer() {
   return `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 }
 
+function useMounted() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
+
 function useLiveStat(base: number, jitter: number, ms = 950) {
   const [val, setVal] = React.useState(base);
   React.useEffect(() => {
@@ -166,18 +173,23 @@ function FoldCard({
 
 /* ── Typing preview ────────────────────────────────────────────── */
 function TypingCyclePreview() {
-  const [modeIdx, setModeIdx]     = React.useState(0);
-  const [typed, setTyped]         = React.useState(0);
+  const mounted = useMounted();
+  const [modeIdx, setModeIdx]      = React.useState(0);
+  const [typed, setTyped]          = React.useState(0);
   const [cycleCount, setCycleCount] = React.useState(0);
 
-  const mode    = TYPING_MODES[modeIdx];
-  const wpm     = useLiveStat(mode.wpmBase, 3, 950);
-  const cpm     = useLiveStat(mode.cpmBase, 10, 950);
-  const acc     = useLiveStat(97, 1, 1200);
-  const netWpm  = Math.max(0, wpm - Math.floor(Math.random() * 3));
-  const timer   = useSessionTimer();
+  const mode   = TYPING_MODES[modeIdx];
+  const wpm    = useLiveStat(mode.wpmBase, 3, 950);
+  const cpm    = useLiveStat(mode.cpmBase, 10, 950);
+  const acc    = useLiveStat(97, 1, 1200);
+  const timer  = useSessionTimer();
+
+  // IMPORTANT: avoid Math.random() during render.
+  // That causes SSR/CSR value differences → hydration mismatch.
+  const netWpm = mounted ? Math.max(0, wpm - 1) : 0;
 
   React.useEffect(() => {
+
     if (cycleCount >= CYCLES_PER_MODE) {
       setModeIdx((prev) => (prev + 1) % TYPING_MODES.length);
       setTyped(0);
