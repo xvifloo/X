@@ -34,7 +34,7 @@ export function XviTypooLogo({ className, size = "md" }: XviTypooLogoProps) {
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/XviTypooTxtL.svg"
+          src="/xviTypooCm.svg"
           alt="XviTypoo"
           height={h}
           className="h-auto object-contain"

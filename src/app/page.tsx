@@ -1,46 +1,51 @@
 "use client";
 
+import { ContactSection } from "@/components/home/contact-section";
 import { EcosystemSection } from "@/components/home/ecosystem-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HeroSection } from "@/components/home/hero-section";
 import { RoadmapSection } from "@/components/home/roadmap-section";
 import { VisionSection } from "@/components/home/vision-section";
 import { XviTypooShowcase } from "@/components/home/xvitypoo-showcase";
-import { SectionBg } from "@/components/site/section-bg";
 import { SiteShell } from "@/components/site/site-shell";
 
 export default function HomePage() {
   return (
     <SiteShell>
-      {/* Section 1 — Dark (hero) */}
-      <SectionBg index={1}>
+      {/* Section 1 — bg: #F2FFFA (light) */}
+      <div className="section-light-bg">
         <HeroSection />
-      </SectionBg>
+      </div>
 
-      {/* Section 2 — Light */}
-      <SectionBg index={2}>
+      {/* Section 2 — bg: white card */}
+      <div className="section-dark-bg">
         <EcosystemSection />
-      </SectionBg>
+      </div>
 
-      {/* Section 3 — Dark */}
-      <SectionBg index={3}>
+      {/* Section 3 — bg: #F2FFFA */}
+      <div className="section-light-bg">
         <XviTypooShowcase />
-      </SectionBg>
+      </div>
 
-      {/* Section 4 — Light */}
-      <SectionBg index={4}>
+      {/* Section 4 — bg: white */}
+      <div className="section-dark-bg">
         <RoadmapSection />
-      </SectionBg>
+      </div>
 
-      {/* Section 5 — Dark */}
-      <SectionBg index={5}>
+      {/* Section 5 — bg: #F2FFFA */}
+      <div className="section-light-bg">
         <VisionSection />
-      </SectionBg>
+      </div>
 
-      {/* Section 6 — Light */}
-      <SectionBg index={6}>
+      {/* Section 6 — bg: white */}
+      <div className="section-dark-bg">
         <FeaturesSection />
-      </SectionBg>
+      </div>
+
+      {/* Section 7 — contact — bg: #F2FFFA */}
+      <div className="section-light-bg">
+        <ContactSection />
+      </div>
     </SiteShell>
   );
 }

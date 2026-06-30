@@ -70,7 +70,7 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
           fill="var(--surface-2)" stroke="var(--line-subtle)" strokeWidth="1" />
         <rect x="14" y={PLATFORM_Y - 17} width={W - 28} height="34" rx="17"
           fill="none" stroke="#17B79B" strokeWidth="0.6" opacity="0.3" />
-        <text x="28" y={PLATFORM_Y - 25} fill="var(--muted-foreground)" fontSize="7"
+        <text x="28" y={PLATFORM_Y - 25} fill="#778B88" fontSize="7"
           letterSpacing="1.4" style={{ fontFamily: "var(--font-mono,monospace)", textTransform: "uppercase" }}>
           XviFloo Platform Core
         </text>
@@ -82,7 +82,7 @@ function ArchDiagram({ active, setActive }: { active: NodeKey; setActive: (k: No
             <g key={layer.id}>
               <circle cx={cx} cy={PLATFORM_Y} r="8" fill="var(--surface-1)" stroke="var(--border)" strokeWidth="0.8" />
               <circle cx={cx} cy={PLATFORM_Y} r="3" fill="#17B79B" opacity="0.55" />
-              <text x={cx} y={PLATFORM_Y + 28} textAnchor="middle" fill="var(--muted-foreground)"
+              <text x={cx} y={PLATFORM_Y + 28} textAnchor="middle" fill="#778B88"
                 fontSize="5.2" style={{ fontFamily: "var(--font-mono,monospace)" }}>
                 {layer.label}
               </text>
@@ -196,7 +196,7 @@ export function EcosystemSection() {
               <div className="flex items-center gap-2">
                 <Radio className="size-3.5 text-[var(--brand)]" aria-hidden="true" />
                 <span className="status-dot" />
-                <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#778B88]">
                   Live system
                 </span>
               </div>
@@ -211,7 +211,7 @@ export function EcosystemSection() {
                   { label: "Edge regions", value: "14",  accent: "var(--accent-blue)" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-xl border border-border/40 bg-[var(--surface-1)] px-4 py-3">
-                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
+                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-[#778B88]">{item.label}</p>
                     <p className="mt-1 font-mono text-xl font-bold tabular-nums" style={{ color: item.accent }}>{item.value}</p>
                   </div>
                 ))}
@@ -226,7 +226,7 @@ export function EcosystemSection() {
                   { label: "Data packets/s", value: "2.4k",  accent: "var(--accent-violet)" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-xl border border-border/40 bg-[var(--surface-1)] px-4 py-3 text-right">
-                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
+                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-[#778B88]">{item.label}</p>
                     <p className="mt-1 font-mono text-xl font-bold" style={{ color: item.accent }}>{item.value}</p>
                   </div>
                 ))}
@@ -259,7 +259,7 @@ export function EcosystemSection() {
                     <span className={cn("badge-status shrink-0", m.badge)}>{node.status}</span>
                   </div>
 
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground line-clamp-2">
+                  <p className="mt-2 text-sm leading-relaxed text-[#778B88] line-clamp-2">
                     {node.description}
                   </p>
 
@@ -273,7 +273,7 @@ export function EcosystemSection() {
                         }} />
                     </div>
                     <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em]"
-                      style={{ color: isActive ? m.accent : "var(--muted-foreground)" }}>
+                      style={{ color: isActive ? m.accent : "#778B88" }}>
                       {m.tag}
                     </span>
                   </div>
@@ -292,14 +292,14 @@ export function EcosystemSection() {
             }}>
             <div className="grid gap-6 md:grid-cols-[1fr_auto]">
               <div>
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#778B88]">
                   {section.root} / {activeNode.name}
                 </p>
                 <h3 className="mt-2 font-heading text-2xl font-semibold tracking-tight transition-colors duration-500"
                   style={{ color: meta.accent }}>
                   {activeNode.name}
                 </h3>
-                <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground">
+                <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-[#778B88]">
                   {activeNode.description}
                 </p>
               </div>
@@ -312,7 +312,7 @@ export function EcosystemSection() {
                 ].map(({ label, value }) => (
                   <div key={label}>
                     <p className="font-mono text-sm font-semibold" style={{ color: meta.accent }}>{value}</p>
-                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
+                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-[#778B88]">{label}</p>
                   </div>
                 ))}
               </div>

@@ -22,3 +22,16 @@ export async function POST(req: Request) {
   return res;
 }
 
+/** DELETE — clear locale cookie so browser Accept-Language header takes effect */
+export async function DELETE() {
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(LOCALE_COOKIE, "", {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
+  return res;
+}
+

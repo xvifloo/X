@@ -11,6 +11,7 @@ const bn = {
     features: "ফিচারস",
     admin: "অ্যাডমিন",
     signIn: "সাইন ইন",
+    contact: "যোগাযোগ",
     menu: "মেনু",
     close: "বন্ধ",
   },

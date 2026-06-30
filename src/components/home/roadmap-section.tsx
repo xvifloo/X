@@ -86,7 +86,7 @@ function CircularGauge({ value, accent }: { value: number; accent: string }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-mono text-sm font-bold tabular-nums">{value}%</span>
-        <span className="font-mono text-[0.48rem] uppercase tracking-[0.08em] text-muted-foreground">done</span>
+        <span className="font-mono text-[0.48rem] uppercase tracking-[0.08em] text-[#778B88]">done</span>
       </div>
     </div>
   );
@@ -191,7 +191,7 @@ function MilestoneRow({
           className="overflow-hidden transition-all duration-500"
           style={{ maxHeight: isActive ? "400px" : "0" }}
         >
-          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{goal}</p>
+          <p className="mt-3 text-xs leading-relaxed text-[#778B88]">{goal}</p>
           {chips.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {chips.map((chip) => (
@@ -299,7 +299,7 @@ export function RoadmapSection() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#778B88]">
                     {section.completion}
                   </p>
                   <p className="mt-1 font-heading text-xl font-bold tracking-tight transition-colors"
@@ -314,25 +314,25 @@ export function RoadmapSection() {
                   <p className="font-mono text-lg font-bold tabular-nums" style={{ color: accent.accent }}>
                     {doneCount}/{current.milestones.length}
                   </p>
-                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-muted-foreground">Stages done</p>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-[#778B88]">Stages done</p>
                 </div>
                 <div>
                   <p className="font-mono text-lg font-bold tabular-nums" style={{ color: accent.accent }}>
                     {activeCount}
                   </p>
-                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-muted-foreground">Active now</p>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-[#778B88]">Active now</p>
                 </div>
               </div>
             </div>
 
             {/* Status legend */}
             <div className="glass-panel rounded-2xl p-5">
-              <p className="mb-4 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">Legend</p>
+              <p className="mb-4 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#778B88]">Legend</p>
               <div className="space-y-2.5">
                 {(["done", "active", "upcoming"] as const).map((s) => (
                   <div key={s} className="flex items-center gap-3">
                     <StatusIcon status={s} accent={accent.accent} />
-                    <span className="text-sm text-muted-foreground capitalize">{section.statusLabels[s]}</span>
+                    <span className="text-sm text-[#778B88] capitalize">{section.statusLabels[s]}</span>
                   </div>
                 ))}
               </div>
@@ -345,8 +345,8 @@ export function RoadmapSection() {
             }}>
               <div className="flex items-start gap-2.5">
                 <Zap className="mt-0.5 size-3.5 shrink-0" style={{ color: accent.accent }} />
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  This roadmap shows <strong className="text-foreground">real engineering status</strong> — not marketing promises.
+                <p className="text-xs leading-relaxed text-[#778B88]">
+                  This roadmap shows <strong className="text-[#444444]">real engineering status</strong> — not marketing promises.
                 </p>
               </div>
             </div>
@@ -354,7 +354,7 @@ export function RoadmapSection() {
             <div className="rounded-2xl border p-4" style={{ borderColor: `${accent.accent}15`, background: accent.muted }}>
               <div className="flex items-start gap-2.5">
                 <Clock className="mt-0.5 size-3.5 shrink-0" style={{ color: accent.accent }} />
-                <p className="text-xs leading-relaxed text-muted-foreground">Updated continuously from the latest engineering sync.</p>
+                <p className="text-xs leading-relaxed text-[#778B88]">Updated continuously from the latest engineering sync.</p>
               </div>
             </div>
           </div>

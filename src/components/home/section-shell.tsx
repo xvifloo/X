@@ -88,7 +88,7 @@ function SplitHeading({ text, isHero }: { text: string; isHero: boolean }) {
   const firstHalf = words.slice(0, splitAt).join(" ");
   const secondHalf = words.slice(splitAt).join(" ");
 
-  const cls = cn(isHero ? "text-display" : "text-display-sm", "text-balance");
+  const cls = cn(isHero ? "text-display" : "text-display-sm", "text-balance font-heading");
 
   return (
     <h2 className={cls}>
@@ -123,11 +123,11 @@ export function SectionShell({
 
   return (
     <section id={id} className={cn("section-pad scroll-mt-20", className)}>
-      <div className="mx-auto w-full max-w-[90rem]">
+      <div className="section-inner">
         <Reveal>
           <header
             className={cn(
-              "mb-14 space-y-4 md:mb-18",
+              "mb-14 space-y-4",
               align === "center" && "mx-auto max-w-3xl text-center",
               align !== "center" && "max-w-4xl",
             )}
@@ -137,7 +137,7 @@ export function SectionShell({
             {subheading && (
               <p
                 className={cn(
-                  "text-pretty leading-relaxed text-muted-foreground",
+                  "text-pretty leading-relaxed text-[#778B88]",
                   isHero ? "max-w-2xl text-lg md:text-xl" : "max-w-2xl text-base md:text-lg",
                   align === "center" && "mx-auto",
                 )}

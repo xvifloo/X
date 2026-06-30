@@ -39,7 +39,7 @@ function FooterModal({
     <div className="fixed inset-0 z-[200] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-8"
       role="dialog" aria-modal="true" aria-labelledby="footer-modal-title">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/65 backdrop-blur-2xl"
+      <div className="absolute inset-0 bg-[#F2FFFA]/65 backdrop-blur-2xl"
         onClick={onClose} aria-hidden="true" />
 
       {/* Panel */}
@@ -60,7 +60,7 @@ function FooterModal({
             <h2 id="footer-modal-title" className="font-heading text-base font-semibold">{title}</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="Close"
-            className="flex size-8 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground">
+            className="flex size-8 items-center justify-center rounded-full border border-border/50 text-[#778B88] transition-colors hover:bg-foreground/5 hover:text-foreground">
             <X className="size-4" />
           </button>
         </div>
@@ -68,7 +68,7 @@ function FooterModal({
         {/* Content — iframe for legal pages, custom JSX for about/admin */}
         <div className="flex-1 overflow-auto">
           {href ? (
-            <iframe src={href} title={title} className="h-[55vh] w-full border-0 bg-background" loading="lazy" />
+            <iframe src={href} title={title} className="h-[55vh] w-full border-0 bg-[#F2FFFA]" loading="lazy" />
           ) : (
             <div className="px-6 py-5">{children}</div>
           )}
@@ -78,7 +78,7 @@ function FooterModal({
         <div className="flex shrink-0 items-center justify-between border-t border-border/30 px-6 py-3">
           {href && (
             <Link href={href} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-[var(--brand)]">
+              className="flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-[#778B88] transition-colors hover:text-[var(--brand)]">
               <ExternalLink className="size-3" aria-hidden="true" />
               Open full page
             </Link>
@@ -135,16 +135,16 @@ export function SiteFooter() {
       {modal?.kind === "about" && (
         <FooterModal title="About XviFloo" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-[#778B88]">
               XviFloo is a technology ecosystem platform unifying productivity, AI, and developer tools
               under one identity, one design language, and one shared infrastructure.
             </p>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-[#778B88]">
               Products in the ecosystem — XviTypoo, XviGet, and Kleava AI — share authentication,
               analytics, content management, and a single design system. This means every new product
               starts with everything already built, not from zero.
             </p>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-[#778B88]">
               We build in public, with a live roadmap and real engineering status — not polished
               marketing promises.
             </p>
@@ -160,7 +160,7 @@ export function SiteFooter() {
       {modal?.kind === "admin" && (
         <FooterModal title="Admin Information" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-[#778B88]">
               The XviFloo Admin panel provides full control over CMS content, product management,
               user roles, analytics, and site settings. Access is restricted to SUPERADMIN, ADMIN,
               and EDITOR roles.
@@ -175,7 +175,7 @@ export function SiteFooter() {
                   <span className="mt-0.5 shrink-0 rounded-md bg-[var(--brand-muted)] px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-[var(--brand)]">
                     {role}
                   </span>
-                  <p className="text-xs text-muted-foreground">{desc}</p>
+                  <p className="text-xs text-[#778B88]">{desc}</p>
                 </div>
               ))}
             </div>
@@ -208,7 +208,7 @@ export function SiteFooter() {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/25 px-6 py-3.5 sm:px-9">
             <div className="flex items-center gap-2">
               <span className="status-dot" aria-hidden="true" />
-              <span className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">Ecosystem status</span>
+              <span className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#778B88]">Ecosystem status</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {ECOSYSTEM_BADGES.map((b) => (
@@ -216,7 +216,7 @@ export function SiteFooter() {
                   className="flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[0.56rem] uppercase tracking-[0.08em]"
                   style={{ borderColor: `${b.accent}25`, color: b.accent, backgroundColor: `${b.accent}10` }}>
                   <span className="size-1 rounded-full" style={{ backgroundColor: b.accent }} aria-hidden="true" />
-                  {b.label} <span className="text-muted-foreground">· {b.status}</span>
+                  {b.label} <span className="text-[#778B88]">· {b.status}</span>
                 </span>
               ))}
             </div>
@@ -227,7 +227,7 @@ export function SiteFooter() {
             {/* Brand */}
             <div className="space-y-4 sm:col-span-2 lg:col-span-1">
               <XviFlooLogo size="lg" />
-              <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+              <p className="max-w-xs text-sm leading-relaxed text-[#778B88]">
                 {dict.footer.tagline}
               </p>
               <div className="flex items-center gap-2 pt-1">
@@ -242,7 +242,7 @@ export function SiteFooter() {
 
             {/* Products */}
             <nav aria-label="Products">
-              <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#778B88]">
                 {dict.footer.columns.products}
               </p>
               <ul className="space-y-2.5">
@@ -250,13 +250,13 @@ export function SiteFooter() {
                   <li key={link.label}>
                     {link.external ? (
                       <a href={link.href} target="_blank" rel="noopener noreferrer"
-                        className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[var(--brand)]">
+                        className="group flex items-center gap-2 text-sm text-[#778B88] transition-colors hover:text-[var(--brand)]">
                         <span className="size-1 rounded-full bg-border transition-colors group-hover:bg-[var(--brand)]" aria-hidden="true" />
                         {link.label}
                       </a>
                     ) : (
                       <Link href={link.href}
-                        className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                        className="group flex items-center gap-2 text-sm text-[#778B88] transition-colors hover:text-foreground">
                         <span className="size-1 rounded-full bg-border transition-colors group-hover:bg-foreground" aria-hidden="true" />
                         {link.label}
                       </Link>
@@ -270,7 +270,7 @@ export function SiteFooter() {
             <div className="space-y-7">
               {/* COMPANY */}
               <nav aria-label="Company">
-                <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#778B88]">
                   {dict.footer.columns.company}
                 </p>
                 <ul className="space-y-2.5">
@@ -278,13 +278,13 @@ export function SiteFooter() {
                     <li key={link.label}>
                       {"action" in link ? (
                         <button type="button" onClick={link.action}
-                          className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                          className="group flex items-center gap-2 text-sm text-[#778B88] transition-colors hover:text-foreground">
                           <span className="size-1 rounded-full bg-border transition-colors group-hover:bg-foreground" aria-hidden="true" />
                           {link.label}
                         </button>
                       ) : (
                         <Link href={link.href}
-                          className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                          className="group flex items-center gap-2 text-sm text-[#778B88] transition-colors hover:text-foreground">
                           <span className="size-1 rounded-full bg-border transition-colors group-hover:bg-foreground" aria-hidden="true" />
                           {link.label}
                         </Link>
@@ -296,7 +296,7 @@ export function SiteFooter() {
 
               {/* LEGAL */}
               <nav aria-label="Legal">
-                <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="mb-4 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#778B88]">
                   {dict.footer.columns.legal}
                 </p>
                 <ul className="space-y-2.5">
@@ -304,7 +304,7 @@ export function SiteFooter() {
                     <li key={link.label}>
                       <button type="button"
                         onClick={() => setModal({ kind: "legal", title: link.label, href: link.href })}
-                        className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[var(--brand)]">
+                        className="group flex items-center gap-2 text-sm text-[#778B88] transition-colors hover:text-[var(--brand)]">
                         <span className="size-1 rounded-full bg-border transition-colors group-hover:bg-[var(--brand)]" aria-hidden="true" />
                         {link.label}
                       </button>
@@ -317,11 +317,11 @@ export function SiteFooter() {
 
           {/* Bottom bar — only copyright + made by */}
           <div className="flex flex-col gap-2 border-t border-border/25 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-9">
-            <p className="font-mono text-[0.62rem] text-muted-foreground">
+            <p className="font-mono text-[0.62rem] text-[#778B88]">
               © {year} {dict.brand.name}. {dict.footer.copyright}
             </p>
             <a href={NAFIS_FB} target="_blank" rel="noopener noreferrer"
-              className="font-mono text-[0.62rem] text-muted-foreground transition-colors hover:text-[var(--brand)]">
+              className="font-mono text-[0.62rem] text-[#778B88] transition-colors hover:text-[var(--brand)]">
               Made by <span className="text-[var(--brand)]">@nafisxvi</span>
             </a>
           </div>

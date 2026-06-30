@@ -11,6 +11,7 @@ const en = {
     features: "Features",
     admin: "Admin",
     signIn: "Sign in",
+    contact: "Contact",
     menu: "Menu",
     close: "Close",
   },

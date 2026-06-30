@@ -186,7 +186,7 @@ export function VisionSection() {
                     style={{ color: item.accent }}>
                     {TIMELINE[i].phase}
                   </p>
-                  <p className="text-xs text-muted-foreground">{TIMELINE[i].label}</p>
+                  <p className="text-xs text-[#778B88]">{TIMELINE[i].label}</p>
                 </div>
               ))}
             </div>
@@ -237,7 +237,7 @@ export function VisionSection() {
                       <p className="mt-0.5 font-heading text-base font-semibold tracking-tight">
                         {phase.label}
                       </p>
-                      <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#778B88]">
                         {phase.description}
                       </p>
                     </div>
@@ -296,7 +296,7 @@ export function VisionSection() {
                         <Icon className="size-6 transition-colors duration-500" style={{ color: vi.accent }} aria-hidden="true" />
                       </span>
                       <div className="text-right">
-                        <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
+                        <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-[#778B88]">
                           {String(index + 1).padStart(2, "0")}
                         </p>
                         <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em]" style={{ color: vi.accent }}>
@@ -304,10 +304,10 @@ export function VisionSection() {
                         </p>
                       </div>
                     </div>
-                    <h3 className="font-heading text-xl font-semibold tracking-tight transition-colors duration-500 group-hover:text-foreground md:text-2xl">
+                    <h3 className="font-heading text-xl font-semibold tracking-tight transition-colors duration-500 group-hover:text-[#444444] md:text-2xl">
                       {item.title}
                     </h3>
-                    <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                    <p className="mt-4 text-base leading-relaxed text-[#778B88]">
                       {item.description}
                     </p>
 

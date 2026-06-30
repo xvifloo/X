@@ -46,7 +46,7 @@ export function XviFlooLogo({ className, size = "md" }: XviFlooLogoProps) {
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/XviFloo-TxtL.svg"
+          src="/xviFlooCm.svg"
           alt="XviFloo"
           height={h}
           style={{ height: h, width: "auto", display: "block" }}

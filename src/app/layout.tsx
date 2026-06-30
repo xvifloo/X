@@ -11,23 +11,20 @@ export const metadata: Metadata = {
   description:
     "XviFloo unifies XviTypoo, XviGet, and Kleava AI into one premium ecosystem for productivity, AI, and future-ready innovation.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/xviFlooFm.svg",
+    shortcut: "/xviFlooFm.svg",
+    apple: "/xviFlooFm.svg",
   },
   openGraph: {
     title: "XviFloo — Technology Ecosystem Platform",
-    description:
-      "One ecosystem. Multiple products. Built for innovation, AI, and productivity.",
+    description: "Think. Build. Evolve. One ecosystem, multiple products.",
     type: "website",
   },
 };
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const locale = await getRequestLocale();
   const dict = await getDictionary(locale);
 
@@ -37,7 +34,12 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* Preconnect for Google Fonts */}
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#F2FFFA]">
         <AppProviders locale={locale} dict={dict}>
           {children}
         </AppProviders>

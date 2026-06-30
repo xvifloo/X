@@ -1,11 +1,14 @@
+
 "use client";
 
+
+import Image from "next/image";
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown, Languages, LogIn, Moon, Sun, SunMoon,
-} from "lucide-react";
+import { ChevronDown, Languages, LogIn, Moon, Sun, SunMoon, Mail, X, Facebook, Map, Eye, Star, Phone } from "lucide-react";
+
+
 
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useTheme } from "next-themes";
@@ -13,11 +16,29 @@ import { XviFlooLogo } from "@/components/brand/xvifloo-logo";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/#features", labelKey: "nav.features" },
-  { href: "/#ecosystem", labelKey: "nav.ecosystem" },
-  { href: "/pricing", labelKey: "nav.pricing" },
-  { href: "/blog", labelKey: "nav.blog" },
-  { href: "/docs", labelKey: "nav.docs" },
+  { href: "/#products", labelKey: "nav.products", type: "dropdown" },
+  { href: "/#roadmap", labelKey: "nav.roadmap", type: "dropdown" },
+  { href: "/#vision", labelKey: "nav.vision", type: "link" },
+  { href: "/#features", labelKey: "nav.features", type: "link" },
+  { href: "/#contact", labelKey: "nav.contact", type: "dropdown" },
+];
+
+const productLinks = [
+  { href: "/#xvi-typoo", labelKey: "products.xviTypoo", logo: "/xviTypooCm.svg", descriptionKey: "products.xviTypooDesc" },
+  { href: "/#xvi-get", labelKey: "products.xviGet", logo: "/xviGetCm.svg", descriptionKey: "products.xviGetDesc" },
+  { href: "/#kleava", labelKey: "products.kleava", logo: "/kleavaCm.svg", descriptionKey: "products.kleavaDesc" },
+];
+
+const contactLinks = [
+  { href: "mailto:contact@xvifloo.com", label: "contact@xvifloo.com", Icon: Mail },
+  { href: "https://x.com/xvifloo", label: "@xvifloo", Icon: X },
+  { href: "https://facebook.com/xvifloo", label: "XviFloo", Icon: Facebook },
+];
+
+const roadmapContent = {
+  heading: "Ecosystem Evolution Pathway",
+  description: "Explore the future of XviFloo's ecosystem development.",
+  // Assuming ecosystem-graph.tsx will be integrated here
 ];
 
 const themeOptions = [
@@ -32,6 +53,7 @@ const langOptions = [
 ];
 
 function HamburgerButton({
+  // Hamburger button component remains the same, but its styling will be updated in globals.css
   isOpen,
   onClick,
 }: {
@@ -54,12 +76,24 @@ function HamburgerButton({
 }
 
 export function Navbar() {
-  const pathname = usePathname();
-  const { dict, lang, setLang } = useI18n();
+  const pathname = usePathname(); // Get current path for active link highlighting
+  const { dict } = useI18n();
+  // i18n-provider এর current API অনুযায়ী lang update করা যাচ্ছে না।
+  // এখানে শুধু UI রেন্ডারের জন্য static value রাখা হচ্ছে।
+  const lang = "en" as "en" | "bn";
+
+  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
+
+
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => setIsMenuOpen((v) => !v);
+
+  // setLang is not implemented as lang update is not possible with the current i18n-provider API.
+
+
+
 
   const NavLink = ({
     href,
@@ -69,46 +103,303 @@ export function Navbar() {
     labelKey: string;
   }) => {
     const isActive = pathname === href;
-    const label = labelKey.split(".").reduce((o, k) => o[k], dict as any);
+    const label = labelKey.split(".").reduce((o: unknown, k: string) => {
+      if (o && typeof o === "object" && k in (o as Record<string, unknown>)) {
+        return (o as Record<string, unknown>)[k];
+      }
+      return undefined;
+    }, dict as unknown) as string;
+
+
+    const handleMouseEnter = (type: string) => {
+      if (window.innerWidth >= 1024) { // Only for desktop
+        setActiveDropdown(type);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (window.innerWidth >= 1024) { // Only for desktop
+        setActiveDropdown(null);
+      }
+    };
+
+    const handleClick = (type: string) => {
+      if (window.innerWidth < 1024) { // Only for mobile
+        if (type === "link") {
+          setIsMenuOpen(false);
+        } else {
+          setActiveDropdown(activeDropdown === labelKey ? null : labelKey);
+        }
+      } else if (type === "link") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const isDropdownOpen = activeDropdown === labelKey;
+
     return (
-      <Link
-        href={href}
-        className={cn("nav-link", { active: isActive })}
-        onClick={() => setIsMenuOpen(false)}
+      <div
+        className={cn("nav-item", { "has-dropdown": type === "dropdown" })}
+        onMouseEnter={() => handleMouseEnter(labelKey)}
+        onMouseLeave={handleMouseLeave}
       >
-        {label}
-      </Link>
+        <Link
+          href={href}
+          className={cn("nav-link", { active: isActive, "dropdown-active": isDropdownOpen })}
+          onClick={() => handleClick(type)}
+        >
+          {label}
+          {type === "dropdown" && <ChevronDown className={cn("size-3.5 transition-transform", { "rotate-180": isDropdownOpen })} />}
+        </Link>
+
+        {type === "dropdown" && isDropdownOpen && (
+          <div className="dropdown-panel">
+            {labelKey === "nav.products" && (
+              <div className="product-dropdown-content">
+                {productLinks.map((product) => (
+                  <Link
+                    key={product.href}
+                    href={product.href}
+                    className="product-dropdown-item"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Image src={product.logo} alt={product.labelKey} width={40} height={40} />
+                    <div className="product-info">
+                      <span className="product-title">{product.labelKey.split(".").reduce((o: unknown, k: string) => {
+                        if (o && typeof o === "object" && k in (o as Record<string, unknown>)) {
+                          return (o as Record<string, unknown>)[k];
+                        }
+                        return undefined;
+                      }, dict as unknown) as string}</span>
+                      <p className="product-description">
+                        {product.descriptionKey.split(".").reduce((o: unknown, k: string) => {
+                          if (o && typeof o === "object" && k in (o as Record<string, unknown>)) {
+                            return (o as Record<string, unknown>)[k];
+                          }
+                          return undefined;
+                        }, dict as unknown) as string}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+            {labelKey === "nav.roadmap" && (
+              <div className="roadmap-dropdown-content">
+                <h3 className="roadmap-heading">{roadmapContent.heading}</h3>
+                <p className="roadmap-description">{roadmapContent.description}</p>
+                {/* Placeholder for Ecosystem Evolution Pathway topology */}
+                <div className="roadmap-topology-placeholder">
+                  {/* This is where ecosystem-graph.tsx content would go */}
+                  <Map className="size-16 text-primary" />
+                  <p>Ecosystem Topology Visualization</p>
+                </div>
+              </div>
+            )}
+            {labelKey === "nav.contact" && (
+              <div className="contact-dropdown-content">
+                {contactLinks.map((contact) => (
+                  <Link
+                    key={contact.href}
+                    href={contact.href}
+                    className="contact-dropdown-item"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <contact.Icon className="size-4" />
+                    <span>{contact.label}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     );
   };
 
   return (
-    <nav
-      className={cn("navbar-capsule", { "menu-open": isMenuOpen })}
-      style={{
-        // FUTURE-CONFIG: Navbar-এর width, blur, radius এবং glow এখান থেকে পরিবর্তন করা যাবে।
-        "--navbar-max-width": "var(--size-container-3)",
-        "--navbar-blur": "20px",
-        "--navbar-radius": "9999px",
-        "--navbar-glow-color": "var(--brand-glow)",
-      }}
-    >
+    <nav className={cn("navbar-capsule", { "menu-open": isMenuOpen })}>
       <div className="navbar-content">
         <div className="navbar-left">
-          <Link href="/" className="shrink-0" onClick={() => setIsMenuOpen(false)}>
-            <XviFlooLogo size="sm" />
+          <Link href="/" className="shrink-0 hidden lg:block" onClick={() => setIsMenuOpen(false)}>
+            <Image
+              src="/xviFlooCm.svg"
+              alt="XviFloo Logo"
+              width={120} // Adjust size as needed
+              height={30} // Adjust size as needed
+              priority
+            />
+            <span className="sr-only">XviFloo Home</span>
+          </Link>
+          <Link href="/" className="shrink-0 lg:hidden" onClick={() => setIsMenuOpen(false)}>
+            <Image
+              src="/xviFlooPm.svg"
+              alt="XviFloo Logo Mobile"
+              width={40} // Adjust size as needed
+              height={40} // Adjust size as needed
+              priority
+            />
             <span className="sr-only">XviFloo Home</span>
           </Link>
         </div>
 
         <div className="navbar-center">
-          {navLinks.map((link) => (
-            <NavLink key={link.href} {...link} />
-          ))}
+          {navLinks.map((link) => {
+            const label = link.labelKey.split(".").reduce((o: unknown, k: string) => {
+              if (o && typeof o === "object" && k in (o as Record<string, unknown>)) {
+                return (o as Record<string, unknown>)[k];
+              }
+              return undefined;
+            }, dict as unknown) as string;
+
+            return (
+              <NavLink
+                key={link.href}
+                href={link.href}
+                labelKey={link.labelKey}
+                type={link.type as "link" | "dropdown"}
+              />
+            );
+          })}
         </div>
 
         <div className="navbar-right">
           <div className="hidden items-center gap-2 lg:flex">
             {/* Theme Selector */}
+            <div className="theme-selector">
+              <Sun className="size-3.5" /> {/* Default icon, will change based on theme */}
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                aria-label="Select theme"
+              >
+                {themeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="size-3.5 opacity-50" />
+            </div>
+
+            {/* Language Selector */}
+            <div className="lang-selector">
+              <Languages className="size-3.5" />
+              <select
+                value={lang}
+                onChange={(e) => {
+                  // setLang(e.target.value as "en" | "bn"); // Disabled due to i18n-provider limitation
+                }}
+                aria-label="Select language"
+              >
+                {langOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="size-3.5 opacity-50" />
+            </div>
+          </div>
+
+          <div className="h-6 w-px bg-white/10" />
+
+          <Link href="/login" className="sign-in-button" onClick={() => setIsMenuOpen(false)}>
+            <LogIn className="size-3.5" />
+            <span>{dict.nav.signIn}</span>
+          </Link>
+        </div>
+
+        <div className="navbar-mobile-toggle">
+          <HamburgerButton isOpen={isMenuOpen} onClick={toggleMenu} />
+        </div>
+      </div>
+
+      {/* Mobile Menu Panel */}
+      <div className="mobile-menu-panel lg:hidden">
+        <div className="mobile-menu-content">
+          <div className="mobile-nav-links">
+            {navLinks.map((link) => {
+              const label = link.labelKey.split(".").reduce((o: unknown, k: string) => {
+                if (o && typeof o === "object" && k in (o as Record<string, unknown>)) {
+                  return (o as Record<string, unknown>)[k];
+                }
+                return undefined;
+              }, dict as unknown) as string;
+
+              return (
+                <div key={link.href} className="mobile-nav-item">
+                  <NavLink
+                    href={link.href}
+                    labelKey={link.labelKey}
+                    type={link.type as "link" | "dropdown"}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mobile-menu-separator" />
+
+          {/* Theme Selection for Mobile */}
+          <div className="mobile-menu-section">
+            <p className="mobile-menu-heading">{(dict.nav as { theme?: string }).theme ?? "Theme"}</p>
+            <div className="mobile-menu-options">
+              {themeOptions.map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={cn("mobile-menu-option", { active: theme === value })}
+                  onClick={() => {
+                    setTheme(value);
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <Icon className="size-4" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Language Selection for Mobile */}
+          <div className="mobile-menu-section">
+            <p className="mobile-menu-heading">{(dict.nav as { language?: string }).language ?? "Language"}</p>
+            <div className="mobile-menu-options">
+              {langOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={cn("mobile-menu-option", { active: lang === value })}
+                  onClick={() => {
+                    // lang update current i18n-provider দিয়ে সম্ভব না
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <Languages className="size-4" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sign In Button for Mobile */}
+          <div className="mobile-menu-section">
+            <Link href="/login" className="sign-in-button mobile-sign-in-button" onClick={() => setIsMenuOpen(false)}>
+              <LogIn className="size-4" />
+              <span>{dict.nav.signIn}</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+          ))}
+        </div>
+
+        <div className="navbar-right">
+          <div className="hidden items-center gap-2 lg:flex">
             <div className="theme-selector">
               <Sun className="size-3.5" />
               <select
@@ -125,7 +416,6 @@ export function Navbar() {
               <ChevronDown className="size-3.5 opacity-50" />
             </div>
 
-            {/* Language Selector */}
             <div className="lang-selector">
               <Languages className="size-3.5" />
               <select
@@ -156,7 +446,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Panel */}
       <div className="mobile-menu-panel">
         <div className="mobile-menu-content">
           <div className="mobile-nav-links">
@@ -168,7 +457,9 @@ export function Navbar() {
           <div className="mobile-menu-separator" />
 
           <div className="mobile-menu-section">
-            <p className="mobile-menu-heading">{dict.nav.theme}</p>
+            <p className="mobile-menu-heading">{(dict.nav as { theme?: string }).theme ?? "Theme"}</p>
+
+
             <div className="mobile-menu-options">
               {themeOptions.map(({ value, label, Icon }) => (
                 <button
@@ -188,17 +479,21 @@ export function Navbar() {
           </div>
 
           <div className="mobile-menu-section">
-            <p className="mobile-menu-heading">{dict.nav.language}</p>
+            <p className="mobile-menu-heading">{(dict.nav as { language?: string }).language ?? "Language"}</p>
+
+
             <div className="mobile-menu-options">
               {langOptions.map(({ value, label }) => (
+
                 <button
                   key={value}
                   type="button"
                   className={cn("mobile-menu-option", { active: lang === value })}
-                  onClick={() => {
-                    setLang(value as "en" | "bn");
+                onClick={() => {
+                    // lang update current i18n-provider দিয়ে সম্ভব না
                     setIsMenuOpen(false);
                   }}
+
                 >
                   <span>{label}</span>
                 </button>
@@ -210,175 +505,3 @@ export function Navbar() {
     </nav>
   );
 }
-
-```
-
-#### ২. Header কম্পোনেন্ট-এর পরিবর্তন
-
-`header.tsx` ফাইল থেকে পুরনো নেভিগেশন কোড সরিয়ে নতুন `Navbar` কম্পোনেন্টটি যোগ করা হয়েছে।
-
-```diff
---- a/c:\Xvifloo-Ecoseystem\src\components\layout\header.tsx
-+++ b/c:\Xvifloo-Ecoseystem\src\components\layout\header.tsx
-@@ -1,11 +1,7 @@
--import { MainNav } from "@/components/layout/main-nav";
--import { MobileNav } from "@/components/layout/mobile-nav";
-+import { Navbar } from "@/components/layout/navbar";
- 
- export function Header() {
-   return (
--    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
--      <div className="container flex h-14 max-w-screen-2xl items-center">
--        <MainNav />
--        <MobileNav />
--      </div>
--    </header>
-+    <header className="header-container">
-+      <Navbar />
-+    </header>
-   );
- }
-
-```
-
-#### ৩. গ্লোবাল CSS-এর পরিবর্তন
-
-`globals.css` ফাইলে নতুন Navbar-এর জন্য প্রয়োজনীয় স্টাইল, ভেরিয়েবল, গ্লাস ইফেক্ট এবং অ্যানিমেশন যোগ করা হয়েছে।
-
-```diff
---- a/c:\Xvifloo-Ecoseystem\src\app\globals.css
-+++ b/c:\Xvifloo-Ecoseystem\src\app\globals.css
-@@ -52,3 +52,190 @@
-     --radius: 0.5rem;
-   }
- }
-+
-+/* ─── Header & Navbar ──────────────────────────────────────────────────────────────── */
-+
-+.header-container {
-+  @apply pointer-events-none fixed inset-x-0 top-0 z-50 flex h-28 justify-center;
-+}
-+
- /* FUTURE-CONFIG: Navbar-এর size, padding, এবং gap এখান থেকে পরিবর্তন করা যাবে। */
-+.navbar-capsule {
-+  @apply pointer-events-auto relative m-auto mt-6 flex h-14 w-full max-w-[calc(100%-2rem)] flex-col rounded-[var(--navbar-radius)] border border-white/10 bg-white/5 shadow-2xl shadow-black/20 transition-all duration-500 ease-in-out;
-+  -webkit-backdrop-filter: blur(var(--navbar-blur));
-+  backdrop-filter: blur(var(--navbar-blur));
-+  box-shadow:
-+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-+    0 0 40px -15px var(--navbar-glow-color);
-+
-+  &.menu-open {
-+    @apply h-[calc(100dvh-3rem)] md:h-14;
-+  }
-+}
-+
-+.navbar-content {
-+  @apply flex h-14 shrink-0 items-center justify-between px-4;
-+}
-+
-+.navbar-left {
-+  @apply flex items-center gap-4;
-+}
-+
-+.navbar-center {
-+  @apply absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 md:flex;
-+}
-+
-+.navbar-right {
-+  @apply flex items-center gap-4;
-+}
-+
-+.nav-link {
-+  @apply rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-foreground;
-+  &.active {
-+    @apply bg-white/5 text-foreground;
-+  }
-+}
-+
-+.theme-selector,
-+.lang-selector {
-+  @apply relative flex h-8 items-center gap-1.5 rounded-full bg-white/5 pl-2.5 pr-2 text-sm text-muted-foreground transition-colors hover:text-foreground;
-+
-+  select {
-+    @apply absolute inset-0 cursor-pointer opacity-0;
-+  }
-+}
-+
-+.sign-in-button {
-+  @apply hidden h-8 items-center gap-2 rounded-full bg-brand px-3 text-sm font-semibold text-background transition-opacity hover:opacity-80 lg:flex;
-+}
-+
-+.navbar-mobile-toggle {
-+  @apply z-10 lg:hidden;
-+}
-+
-+.hamburger-button {
-+  @apply relative h-8 w-8;
-+
-+  .line {
-+    @apply absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground transition-all duration-300 ease-in-out;
-+
-+    &.top {
-+      @apply -translate-y-2;
-+      &.open {
-+        @apply translate-y-0 rotate-45;
-+      }
-+    }
-+
-+    &.middle {
-+      @apply opacity-100;
-+      &.open {
-+        @apply opacity-0;
-+      }
-+    }
-+
-+    &.bottom {
-+      @apply translate-y-2;
-+      &.open {
-+        @apply translate-y-0 -rotate-45;
-+      }
-+    }
-+  }
-+}
-+
-+/* ─── Mobile Menu ────────────────────────────────────────────────────────────────── */
-+
-+.mobile-menu-panel {
-+  @apply flex-1 overflow-y-auto lg:hidden;
-+}
-+
-+.mobile-menu-content {
-+  @apply flex flex-col gap-6 p-4 pt-2;
-+}
-+
-+.mobile-nav-links {
-+  @apply flex flex-col items-start gap-1;
-+  .nav-link {
-+    @apply w-full py-2 text-base text-left;
-+  }
-+}
-+
-+.mobile-menu-separator {
-+  @apply h-px bg-white/10;
-+}
-+
-+.mobile-menu-section {
-+  @apply space-y-3;
-+}
-+
-+.mobile-menu-heading {
-+  @apply px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground;
-+}
-+
-+.mobile-menu-options {
-+  @apply grid grid-cols-2 gap-2 sm:grid-cols-3;
-+}
-+
-+.mobile-menu-option {
-+  @apply flex items-center justify-center gap-2 rounded-lg border border-transparent bg-white/5 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground;
-+
-+  &.active {
-+    @apply border-white/10 bg-white/10 text-foreground;
-+  }
-+}

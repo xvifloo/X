@@ -104,7 +104,7 @@ export function FeaturesSection() {
       {/* Enterprise capability strip */}
       <Reveal>
         <div className="glass-panel mb-10 overflow-hidden rounded-2xl px-6 py-5">
-          <p className="mb-5 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="mb-5 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-[#778B88]">
             Platform capabilities
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -117,7 +117,7 @@ export function FeaturesSection() {
                   className="size-3.5 shrink-0 text-[var(--brand)] transition-transform duration-300 group-hover:scale-110"
                   aria-hidden="true"
                 />
-                <span className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-muted-foreground group-hover:text-foreground transition-colors">
+                <span className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-[#778B88] group-hover:text-[#444444] transition-colors">
                   {label}
                 </span>
               </div>
@@ -181,17 +181,17 @@ export function FeaturesSection() {
                       >
                         {config.stat}
                       </p>
-                      <p className="mt-0.5 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-[#778B88]">
                         {config.statLabel}
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="font-heading text-base font-semibold tracking-tight transition-colors duration-300 group-hover:text-foreground">
+                    <h3 className="font-heading text-base font-semibold tracking-tight transition-colors duration-300 group-hover:text-[#444444]">
                       {item.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-2 text-sm leading-relaxed text-[#778B88]">
                       {item.description}
                     </p>
                   </div>
@@ -246,10 +246,10 @@ export function FeaturesSection() {
                   Get In Touch
                 </p>
                 <h2 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-                  <span className="text-foreground">Have a question or </span>
+                  <span className="text-[#444444]">Have a question or </span>
                   <span className="hero-gradient-text">partnership idea?</span>
                 </h2>
-                <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+                <p className="max-w-xl text-base leading-relaxed text-[#778B88]">
                   We&apos;re always glad to hear from builders, partners, and curious minds exploring the XviFloo ecosystem.
                 </p>
                 <div className="flex flex-wrap gap-4 pt-2">
@@ -262,7 +262,7 @@ export function FeaturesSection() {
                   </a>
                   <a
                     href="mailto:contact@xvifloo.com"
-                    className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 px-6 text-sm font-medium text-foreground/75 transition-all duration-300 hover:border-[var(--brand)]/40 hover:bg-[var(--brand-muted)] hover:text-[var(--brand)]"
+                    className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 px-6 text-sm font-medium text-[#444444]/75 transition-all duration-300 hover:border-[var(--brand)]/40 hover:bg-[var(--brand-muted)] hover:text-[var(--brand)]"
                   >
                     contact@xvifloo.com
                   </a>
@@ -279,8 +279,8 @@ export function FeaturesSection() {
                     className="rounded-2xl border border-border/40 bg-background/50 px-5 py-4 backdrop-blur-sm">
                     <p className="font-heading text-2xl font-bold text-[var(--brand)]"
                       dangerouslySetInnerHTML={{ __html: item.value }} />
-                    <p className="mt-0.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
-                    <p className="font-mono text-[0.55rem] text-muted-foreground/60">{item.sub}</p>
+                    <p className="mt-0.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-[#778B88]">{item.label}</p>
+                    <p className="font-mono text-[0.55rem] text-[#778B88]/60">{item.sub}</p>
                   </div>
                 ))}
               </div>
